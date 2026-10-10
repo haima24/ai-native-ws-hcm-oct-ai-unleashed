@@ -3,6 +3,7 @@ applyTo: "src/**/*.tsx,src/features/**/*.ts"
 ---
 # React and UI
 
+- Follow `docs/design/ui-ux.md` for layout and states.
 - Components render state and dispatch intent. Keep validation, voting transitions and result calculations in `src/domain/`; keep transport out of components.
 - Use functional components and hooks; one primary exported component per file.
 - Keep only necessary state. Derive values during render instead of syncing with effects.

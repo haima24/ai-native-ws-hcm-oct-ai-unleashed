@@ -81,7 +81,7 @@ Pending, failure and reconnection feedback is target behavior; BA and Developer 
 - Show only `Average` and `Consensus` besides the per-Participant votes.
 - Average excludes `?` (D-009). Consensus is `Yes` when there is at least one numeric vote and all numeric votes are equal; otherwise `No` (D-010).
 - Proposed (D-015): Average to at most two decimals; with no numeric votes, Average and Consensus show `—`. Show `2 of 3 voted` to make participation explicit.
-- The adjacency variant of consensus is an open decision (D-016); do not change it through UI wording.
+- Consensus is all numeric votes equal; the adjacency variant is out of scope (D-019).
 
 ## 6. Accessibility and selectors
 

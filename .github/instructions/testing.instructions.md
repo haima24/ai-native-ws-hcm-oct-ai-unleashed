@@ -8,7 +8,7 @@ applyTo: "src/**/*.test.ts,src/**/*.test.tsx,tests/**/*.ts,playwright.config.ts"
 - Vitest for domain logic without network, including malformed input. Playwright for user journeys.
 - Use separate Host and Guest browser contexts and a fresh room per test.
 - Prefer role/label locators and web-first assertions. Avoid fixed sleeps and brittle CSS selectors.
-- Privacy: with a Host and two Guests, inspect what the non-voting Guest receives before reveal; DOM checks alone are not enough.
+- Privacy (D-005): with a Host and two Guests, assert at UI level that other Participants' vote values are never shown before reveal. Do not assert network privacy; record in the verification report that a shared Supabase topic does not guarantee it.
 - Host-only: assert the Guest UI has no Reveal/Revote controls, and that a forged reveal/revote intent from a Guest is ignored.
 - Results: cover zero numeric votes, mixed `?` and numbers, all `?`, and consensus (all numeric votes equal).
 - Flow: create, join, vote, reveal, revote, reveal without page reload.

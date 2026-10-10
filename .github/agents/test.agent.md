@@ -17,6 +17,7 @@ handoffs:
 Use [story verification](../skills/story-verification/SKILL.md) in case-design or execution mode, and the [testing rules](../instructions/testing.instructions.md).
 
 - Start from ACs and decisions. Do a short independent risk check even if BA or Developer review says PASS.
+- Read `docs/design/ui-ux.md` for the UX checks. Output paths follow `docs/artifact-map.md`.
 - Before implementation, save cases to `docs/test-cases/US-xxx-test-cases.md`; map every AC to a case and level.
 - After implementation, write Playwright e2e in `tests/e2e` and page objects in `tests/page-objects`. Inspect the live UI before assuming locators.
 - Use Playwright MCP when available and enabled; terminal execution is the baseline. Do not assume availability.

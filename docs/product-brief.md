@@ -22,7 +22,7 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
 
 ## Success criteria
 1. Host and Guest in separate browser contexts see roster updates within 2 s.
-2. Before reveal, others never see vote values, only Voted / Not voted.
+2. Before reveal, the UI of other Participants never shows vote values, only Voted / Not voted; network-level privacy is not guaranteed (D-005).
 3. The Guest UI has no Reveal/Revote controls; the Host ignores such intents from non-Host clients.
 4. Create > join > vote > reveal > revote > reveal works without a page reload.
 5. After reveal, all clients show identical votes, average and consensus.

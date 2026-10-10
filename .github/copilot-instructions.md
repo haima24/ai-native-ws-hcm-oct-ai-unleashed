@@ -7,6 +7,8 @@
 ## Context and scope
 - Read `docs/product-brief.md` when starting a feature or changing scope: 3 MVP features (US-001..US-003), success criteria, out of scope.
 - Read relevant sections of `docs/knowledge/glossary.md` and `docs/knowledge/decisions.md`. Accepted is not proof of code compliance; Proposed must not silently become a requirement.
+- Read [UI/UX](../docs/design/ui-ux.md) before any UI work; see [artifact map](../docs/artifact-map.md) for artifact owners and paths.
+- Scope guard: anything under "Out of scope" in the brief is never built.
 - Stack: React 19, strict TypeScript, Vite, Tailwind, Supabase Realtime Broadcast (no tables), Vercel, Vitest, Playwright. Add no library or infrastructure without an agreed need.
 - Roles: Host (room creator and facilitator) and Guests; all are Participants and vote. Only the Host reveals and revotes.
 
@@ -24,7 +26,7 @@
 - One story at a time; keep diffs small.
 - Load only the skill needed for the task.
 - Keep chat answers short; save durable results in repo artifacts, not pasted logs.
-- Record team usage in `docs/token-log.md`.
+- Record team usage in `docs/token-log.md`; log AI usage with `scripts/log-ai-usage.ps1`.
 
 ## Quality and evidence
 - Never commit credentials. Only the Supabase URL and anon key are allowed in Vite env vars, never service-role keys.

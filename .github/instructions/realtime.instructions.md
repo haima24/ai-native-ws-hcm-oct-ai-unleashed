@@ -14,7 +14,7 @@ Context: no custom backend and no database tables. Supabase Realtime Broadcast c
 ## Ordering
 - Increase the room revision only for accepted changes; no-ops and rejections keep it.
 - Ignore any state update whose revision is not newer, within the same room.
-- A late vote from an earlier round must not count in a new round. If the design cannot prevent this, report it and propose a round ID; do not invent a protocol.
+- A late vote from an earlier round must not count in a new round. Vote intents carry `roundId` (D-018); the Host rejects intents with a different `roundId`.
 
 ## Untrusted input
 - Validate every incoming message at runtime: type, sender ID, vote value (0, 1, 2, 3, 5, 8, 13, 21, ?), and fields for the current phase. TypeScript types do not check network data.
