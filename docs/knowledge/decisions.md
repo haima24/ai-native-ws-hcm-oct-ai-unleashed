@@ -28,5 +28,6 @@ These choices reuse the product direction in [product brief](../product-brief.md
 | D-021 | Accepted | Reveal requires at least one accepted vote; message `At least one vote is required to reveal` | Prevents revealing an empty round |
 | D-022 | Accepted | Results show `<voted> of <participants> voted` using the current roster as denominator; an accepted `?` counts as voted | Makes participation clear without treating abstention as no vote |
 | D-023 | Accepted | The result population is the current roster: a Participant who leaves is removed from Results and their vote is excluded; a Guest joining in `revealed` appears as `No vote` and changes only the participation denominator | Keeps displayed results aligned with current room membership |
+| D-024 | Accepted | Supersedes D-009, D-010, D-015 and D-019 for US-003 Results: show counts grouped by accepted card value, numeric values ascending with `?` last; do not show Average or Consensus. A compact horizontal bar per card value is suggested. | Makes the distribution of estimates directly visible without reducing it to summary metrics |
 
 No completed spike, deployment or test execution is implied by this table. Domain terms: [glossary](glossary.md). Screens: [UI/UX](../design/ui-ux.md).
