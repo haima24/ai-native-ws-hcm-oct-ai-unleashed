@@ -16,8 +16,11 @@ The fixed scale is `0, 1, 2, 3, 5, 8, 13, 21, ?` (D-011). Nine cards use a 5+4 d
 ### Home — US-001
 - Page title `Story Pointing`; subtitle `Estimate together, without signing up.`
 - Two labeled sections: `Create room` (`Display name`, primary action) and `Join room` (`Room code`, `Display name`, primary action). A share link prefills the room code.
-- Show field validation beside the field using the exact US-001 AC messages, not generic toasts.
-- While connecting, disable duplicate submission and show `Connecting…`; keep typed input on failure.
+- Show field validation beside the field using the exact US-001 messages (`Enter a display name.`, `Display name must be 20 characters or fewer.`, `That name is already taken in this room.`, `Enter the room code.`, `Room code must be 6 letters or digits.`), not generic toasts. Field errors are linked to the input and expose alert feedback.
+- Form-level errors appear above the submit button of the form that was submitted: `Room not found or unreachable. Check the code and try again.` (AC-001-11) and `Could not connect in time. Try again.` (AC-001-08).
+- While connecting, disable duplicate submission and show `Connecting…`; keep typed input on failure. Limits: create 10 s, join 5 s (baselines, not measured).
+- Room code input is trimmed and upper-cased; a share link prefills it and leaves `Display name` empty and never auto-joins (AC-001-03). After a Guest reload, Home shows the last room code and display name prefilled; no automatic rejoin.
+- Host-left screen (AC-001-10): replaces the Room shell content with `The Host closed the room. Return to Home to start or join another room.` and a button returning to Home; the Players list is not shown as live.
 
 ### Room shell — US-001, US-002, US-003
 
@@ -38,6 +41,7 @@ The fixed scale is `0, 1, 2, 3, 5, 8, 13, 21, ?` (D-011). Nine cards use a 5+4 d
 Names and values are illustrative. Before reveal, the roster never shows other Participants' values. A player without an accepted vote stays `Not voted`, even if another client has a pending selection.
 
 - Header: room code, copy-link action and connection feedback. Success says `Link copied`; failure says `Could not copy link. Select and copy the link.` and shows a selectable URL.
+- Players roster: `Players (n)` count matches the number of rows; the same names appear for every Participant within 2 s of a join (AC-001-04) and a Participant who leaves disappears (AC-001-09). A Guest joining mid-round shows `Not voted`.
 - Sidebar title is `Players`, a UI alias for Participant (see [glossary](../knowledge/glossary.md)). Rows show display name, Host/You annotation and vote status or value.
 - Main panel: phase, card grid, the Host-only primary action, then Results after reveal.
 - No avatars, custom scales, story title, chat or extra navigation.
@@ -70,6 +74,7 @@ Phases are `voting` and `revealed` only (D-006). Reveal and Revote are Host-only
 | Revealed | Cards disabled; roster shows values or `No vote`; Results shown | `Revote` | Read results; text `Waiting for Host to start a revote.` |
 | Revote | All votes, selections and Results cleared; back to `voting` | Vote again | Vote again |
 | Connection lost | Last view marked stale; voting and actions disabled; `Connection lost. Reconnecting…` | Same | Same |
+| Host left (Guest only) | Room ended: message `The Host closed the room. Return to Home to start or join another room.` and a return-to-Home button; no live Players list | n/a (Host tab closed or reloaded; reloaded Host starts at Home) | Return to Home |
 
 Proposed (confirm in US-002 before implementation): Reveal with zero votes is blocked with `At least one vote is required to reveal`.
 
