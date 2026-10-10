@@ -62,34 +62,23 @@ Keep AC IDs stable when revising. Each AC has an observable result. Playwright u
 - **When** they submit `Join room` with an empty room code, or a code that after trimming is not exactly 6 characters or contains characters outside the code alphabet (e.g. `ABC12`, `ABC1234`, `ABC-12`, `ABO012`)
 - **Then** the matching field error from the Input validation table is shown beside `Room code`, no connection attempt result is shown as joined, and typed values stay in the fields
 
-### AC-001-08 Unknown or unreachable room
-- **Given** the user submits `Join room` with a well-formed code for which no Host responds (never created, ended, or network unreachable)
-- **When** no join confirmation arrives within 5 s
-- **Then** the unknown-or-unreachable error is shown, the form is usable again, and the typed room code and display name are kept
-
-### AC-001-09 Connecting state and timeout
+### AC-001-08 Connecting state and timeout
 - **Given** the user has submitted `Create room` (limit 10 s) or `Join room` (limit 5 s)
 - **When** the request is in progress
 - **Then** the submit control is disabled and `Connecting…` is shown, so a second click creates or joins only once
 - **And** when the realtime connection cannot be established within the limit, the timeout error from the Input validation table is shown, the form is enabled again and typed input is kept
 
-### AC-001-10 Joining mid-round
-- **Given** a room is in phase `voting` or `revealed`
-- **When** a new Guest joins
-- **Then** the Guest's Room shell shows that current phase and the Guest's own row shows no vote (`Not voted`; no value even in `revealed`)
-- **And** existing Participants' lists show the new Participant as not voted without changing any existing Participant's displayed vote status
-
-### AC-001-11 Guest leaves
+### AC-001-09 Guest leaves
 - **Given** the Host and two Guests are in a room
 - **When** one Guest closes their tab
 - **Then** that Guest's name disappears from the Host's and the other Guest's Players lists and the count decreases by one
 - **And** the departed name can be used again by a new join
 
-### AC-001-12 Host leaves ends the room
+### AC-001-10 Host leaves ends the room
 - **Given** the Host and at least one Guest are in a room
 - **When** the Host closes or reloads the tab
 - **Then** each Guest sees the Host-left message from the Input validation table and a control to return to Home; no Players list is presented as live
-- **And** after the Guest returns to Home, joining with the old code shows the AC-001-08 error; the reloaded Host starts at Home with no room
+- **And** after the Guest returns to Home, joining with the old code shows the unknown-or-unreachable error from the Input validation table; the reloaded Host starts at Home with no room
 
 ## Input validation
 | Field | Rule | Exact error message |
@@ -128,13 +117,11 @@ Existing UI strings reused unchanged from [UI/UX](../design/ui-ux.md): `Connecti
 | AC-001-05 | — (US-001 "Done when") | — |
 | AC-001-06 | — (US-001 "Done when") | — |
 | AC-001-07 | — (US-001 "Done when") | D-016 |
-| AC-001-08 | — (US-001 "Done when") | D-003, D-004 |
-| AC-001-09 | — (US-001 "Done when") | D-003, D-017 |
-| AC-001-10 | 4 (no reload) | D-004, D-006 |
-| AC-001-11 | 1 | D-004 |
-| AC-001-12 | — (brief out of scope: no host migration) | D-004 |
+| AC-001-08 | — (US-001 "Done when") | D-003, D-017 |
+| AC-001-09 | 1 | D-004 |
+| AC-001-10 | — (brief out of scope: no host migration) | D-004 |
 
-D-017 is relevant only to environment configuration (needed by AC-001-09); no AC tests it directly.
+D-017 is relevant only to environment configuration (needed by AC-001-08); no AC tests it directly.
 
 ## Dependencies
 - [product brief](../product-brief.md), [decisions](../knowledge/decisions.md), [glossary](../knowledge/glossary.md), [UI/UX](../design/ui-ux.md) (Home and Room shell).
@@ -153,13 +140,13 @@ D-017 is relevant only to environment configuration (needed by AC-001-09); no AC
 | 7 | Guest reload returns to Home with code and name prefilled; no auto rejoin. | reversible assumption | Open for mob review |
 | 8 | Create waits up to 10 s, join up to 5 s; baselines, not measured. | reversible assumption | Developer to verify |
 | 9 | Error message wording in the validation table is new copy. | reversible assumption | Open for mob review |
-| 10 | Can the client distinguish "no Host responded" from "transport not connected" so AC-001-08 and AC-001-09 show different messages? If not, both may collapse to one message. | question | Developer to answer in spec |
+| 10 | Can the client distinguish "no Host responded" from "transport not connected" so the unknown-or-unreachable message and the AC-001-08 timeout message differ? If not, both may collapse to one message. (The unknown-room case no longer has its own AC.) | question | Developer to answer in spec |
 | 11 | Can a Broadcast-only design reliably detect a closed or reloaded Host tab (and a closed Guest tab) without an arbitrary timer? UI/UX says not to invent a timer detector. | question | Developer to answer in spec |
 
 ## Review
-- INVEST check: Small and Testable hold, but the story bundles create, join, validation and leave/Host-left behavior into 12 ACs; it is at the upper size limit for one-day delivery. If the mob needs a smaller slice, AC-001-11 and AC-001-12 (leave handling) can be split into a follow-up without breaking the rest. The "Valuable" part depends on US-002/US-003 for a full demo.
+- INVEST check: Small and Testable hold, but the story bundles create, join, validation and leave/Host-left behavior into 10 ACs. If the mob needs a smaller slice, AC-001-09 and AC-001-10 (leave handling) can be split into a follow-up without breaking the rest. The "Valuable" part depends on US-002/US-003 for a full demo.
 - Material issues:
-  - AC-001-04, AC-001-08, AC-001-09 and AC-001-12 depend on timing/leave detection that Supabase Broadcast may not support reliably without a presence mechanism or timers (questions 10 and 11); if infeasible, those ACs must be revised, not weakened silently.
-  - AC-001-08 "network unreachable" is testable only by blocking the network in Playwright; "never created" and "ended" are testable without it.
+  - AC-001-04, AC-001-08, AC-001-09 and AC-001-10 depend on timing/leave detection that Supabase Broadcast may not support reliably without a presence mechanism or timers (questions 10 and 11); if infeasible, those ACs must be revised, not weakened silently.
+  - ACs were renumbered after removing the unknown-or-unreachable-room AC and the mid-round-join AC. The unknown-or-unreachable error row remains in the validation table and is only referenced by AC-001-10; the mid-round join behavior remains as business rule 5 and assumption 4 with no AC. Test cases for both must come from those rules, or the mob should drop the rules.
   - AC-001-04's 2 s is measured from join confirmation on the joining client; the brief does not define the start point (assumption of this story).
-  - Guest-reload behavior (rule 8) has no dedicated AC to stay within the AC budget; the Test owner should add a test case from the rule.
+  - Guest-reload behavior (rule 8) has no dedicated AC; the Test owner should add a test case from the rule.
