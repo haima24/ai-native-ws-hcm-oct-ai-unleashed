@@ -18,7 +18,7 @@ As a Participant, I want to choose and change an estimate while votes are hidden
 
 **Out of scope**
 - Creating or joining a room, display names and the Players roster structure (US-001).
-- Reveal and Revote controls or authorization, revealing values, Results, Average and Consensus (US-003).
+- Reveal and Revote controls or authorization, revealing values, and grouped Results (US-003).
 - Network-level confidentiality or protection from inspecting messages (D-005).
 - Custom scales, multiple votes per Participant, round history or persistence.
 

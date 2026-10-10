@@ -2,7 +2,7 @@
 
 ## Goal and non-goals
 - **Goal:** Let every Participant pick and change one card while the room is in `voting`; others see only `Voted` / `Not voted`.
-- **Non-goals:** Reveal, Revote, Results, Average, Consensus, post-reveal vote display (US-003); room create/join and roster structure (US-001); network-level vote privacy (D-005); custom scales, history, persistence.
+- **Non-goals:** Reveal, Revote, grouped Results, post-reveal vote display (US-003); room create/join and roster structure (US-001); network-level vote privacy (D-005); custom scales, history, persistence.
 - **Requirement:** [US-002](../requirements/US-002-vote-with-hidden-card.md)
 - **References:** [decisions](../knowledge/decisions.md), [UI/UX](../design/ui-ux.md) (state matrix, selectors section 6), [US-001 spec](US-001-dev-spec.md) (format, Realtime design).
 - **Decisions:** D-003, D-004, D-005, D-006, D-011, D-014, D-018 (all Accepted); D-023 (a leaving Participant's vote is excluded); D-008 (Revote clears votes, US-003).

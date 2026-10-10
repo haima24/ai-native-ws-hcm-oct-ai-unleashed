@@ -83,10 +83,10 @@ Pending, failure and reconnection feedback is target behavior; BA and Developer 
 ## 5. Results contract — US-003
 
 - After reveal, show each Participant's value; `No vote` for no accepted vote. `?` is a cast abstention, distinct from no vote.
-- Show only `Average` and `Consensus` besides the per-Participant votes.
-- Average excludes `?` (D-009). Consensus is `Yes` when there is at least one numeric vote and all numeric votes are equal; otherwise `No` (D-010).
-- Accepted (D-015): Average to at most two decimals; with no numeric votes, Average and Consensus show `—`. Show `2 of 3 voted` to make participation explicit.
-- Consensus is all numeric votes equal; the adjacency variant is out of scope (D-019).
+- Show grouped counts of accepted votes by card value, excluding Participants without an accepted vote. A cast `?` is its own group.
+- Order numeric card values from lowest to highest and place `?` last (D-025).
+- Each group row shows the card label, a simple horizontal bar, and the exact count text `<n> vote` when the count is 1 or `<n> votes` otherwise (D-025).
+- Show `<voted> of <participants> voted` using the current Players roster; an accepted `?` counts as a vote (D-022).
 
 ## 6. Accessibility and selectors
 
@@ -105,7 +105,7 @@ Pending, failure and reconnection feedback is target behavior; BA and Developer 
 | UX-03 Role/phase rules | Host and Guest views in `voting` and `revealed`; Guest has no Reveal/Revote; controls match the matrix |
 | UX-04 Vote selection | Keyboard and pointer; selected, pending, accepted and failed states distinguishable |
 | UX-05 Errors/copy | AC messages, retained input, copy success and fallback |
-| UX-06 Results/revote | Per-user values, no vote vs `?`, Average and Consensus; all cleared after Revote |
+| UX-06 Results/revote | Per-user values, no vote vs `?`, grouped counts and participation; all cleared after Revote |
 | UX-07 Accessibility | Labels, focus order, visible focus, pressed state, readable contrast |
 | UX-08 Privacy | Separate network-boundary tests; screenshots or DOM alone cannot prove it (D-005) |
 

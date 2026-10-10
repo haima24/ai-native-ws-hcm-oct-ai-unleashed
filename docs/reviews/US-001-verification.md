@@ -45,7 +45,7 @@ Manual supplement (separate browser profiles/contexts):
 2. Click Copy link, paste the actual clipboard value into a separate Guest context; verify code prefill, enter Noah and join. Both rosters must match.
 3. Add Linh in a third context; check the same three names and counts, within 2 s of Linh seeing the Room shell.
 4. Close Noah; verify both remaining rosters remove Noah. Close Host; verify Linh sees Host-left and can return Home. Joining the ended code must fail.
-5. Once US-002/003 are implemented, add an automated smoke journey without page reload: Host votes 3, Guest votes 5, another Guest votes `?`; verify other values remain hidden; Host reveals; everyone sees Average 4, Consensus No, 3 of 3 voted; Host revotes; values/results clear; vote again and reveal. Guests must have no Reveal/Revote controls. Test forged intents separately at protocol level.
+5. Once US-002/003 are implemented, add an automated smoke journey without page reload: Host votes 3, Guest votes 5, another Guest votes `?`; verify other values remain hidden; Host reveals; everyone sees the `3` and `5` groups each with `1 vote`, the `?` group with `1 vote`, and `3 of 3 voted`; Host revotes; values/results clear; vote again and reveal. Guests must have no Reveal/Revote controls. Test forged intents separately at protocol level.
 
 ## Completion recommendation
 
