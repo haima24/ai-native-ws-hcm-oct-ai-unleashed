@@ -1,13 +1,13 @@
 # US-004: Vintage UI refresh
 
-**Status:** Draft, blocked on mob decision (see Open question Q1). Not part of the 3 MVP features; do not start the spec or code until the mob approves the scope change. Revision 2: Bootstrap dropped; the theme is built with the current Tailwind setup (D-002). Revision 3: adds decorative imagery and page decoration (AC-004-09..11; changed lines marked `rev 3`).
+**Status:** Accepted by the mob 2026-10-10; presentation-only. Revision 2: Bootstrap dropped; the theme is built with the current Tailwind setup (D-002). Revision 3: adds decorative imagery and page decoration (AC-004-09..11; changed lines marked `rev 3`).
 
 ## Story
 As a Participant, I want the Home and Room screens to use a consistent vintage look with decorative images and ornaments, so that the app feels polished and easy to scan without changing how estimation works.
 
 - MVP feature: none. Presentation-only change across US-001, US-002 and US-003 screens ([product brief](../product-brief.md)).
 - Brief success criteria: 1-6 must still hold unchanged (regression guard).
-- Decisions: D-001 (Accepted), D-002 (Accepted, Tailwind kept), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-011 (Accepted). Brief "Out of scope: themes" is affected (see Q1).
+- Decisions: D-001 (Accepted), D-002 (Accepted, Tailwind kept), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-011 (Accepted), D-026 (Accepted, one fixed vintage theme; its "fixed" part is superseded by D-027 in US-005). Brief "Out of scope: themes" is lifted for this story by D-026 (Q1).
 
 ## Scope
 **In scope**
@@ -135,9 +135,9 @@ No new input rules. Existing field rules and exact messages in US-001 are unchan
 ## Open questions and assumptions
 | # | Question or assumption | Type | Status |
 |---|---|---|---|
-| Q1 | The brief lists "themes" as out of scope. Does the mob accept one fixed vintage theme as a scope change? Recommend yes, as a single fixed theme, no switcher. | question | Open, blocks start |
+| Q1 | The brief lists "themes" as out of scope. Does the mob accept one fixed vintage theme as a scope change? Recommend yes, as a single fixed theme, no switcher. | question | Accepted by the mob 2026-10-10 (recommended default: one fixed vintage theme, no switcher; D-026) |
 | Q2 | Bootstrap vs Tailwind. | question | Resolved: keep current Tailwind (D-002); Bootstrap dropped |
-| Q3 | "Vintage template" is not a specific file in the repo. Assumed: a custom vintage theme expressed as Tailwind theme tokens, sepia palette. A named template would be only a visual reference. | reversible assumption | Open |
+| Q3 | "Vintage template" is not a specific file in the repo. Assumed: a custom vintage theme expressed as Tailwind theme tokens, sepia palette. A named template would be only a visual reference. | reversible assumption | Accepted by the mob 2026-10-10 (recommended default) |
 | Q4 | Exact palette and serif font stack are defined by Developer/mob in the spec; target only: paper background, ink-brown text, sepia/brick accent, contrast at least 4.5:1. | reversible assumption | Open |
 | Q5 | (rev 3) Image budget: how much extra weight is acceptable for decorations? Assumed: SVG or CSS only, no raster photos, so the build stays small; no number is set until the mob gives one. | reversible assumption | Open |
 | Q6 | (rev 3) The brief excludes "avatars"; illustration and ornaments are not named there. Does the mob accept fixed, non-Participant decoration? Recommend yes; related to Q1. | question | Open, blocks start |

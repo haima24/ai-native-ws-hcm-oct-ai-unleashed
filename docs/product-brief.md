@@ -1,7 +1,7 @@
 # Product Brief
 
 ## Overview
-Story Pointing is a planning-poker web app for agile teams. A Host creates a room, Guests join, everyone votes on a story with hidden Fibonacci cards, the Host reveals the results and can start a revote. One end-to-end flow, demoable in 5 minutes, built by one mob in one day.
+Story Pointing is a planning-poker web app for agile teams. A Host creates a room, Guests join, everyone votes on a story with hidden Fibonacci cards, the Host reveals the results and can start a revote. Five stories: US-001..US-003 are the core estimation flow, demoable in 5 minutes; US-004 and US-005 are presentation-only (look and theme), approved by the mob as a scope exception (D-026, D-027).
 
 ## Target users
 - Host: the room creator and the facilitator of the session, typically a Scrum Master or tech lead.
@@ -19,6 +19,12 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
 3. **US-003 Reveal, results and revote**
    - Value: the team sees how estimates are distributed and re-estimates without a new room.
    - Done when: only the Host can reveal; all clients show every vote and grouped counts per accepted card value in ascending numeric order, with `?` last, plus a simple horizontal bar per group and the participation count; only the Host can revote, which clears all votes for a new round in the same room.
+4. **US-004 Vintage UI refresh** (presentation only)
+   - Value: a polished, consistent look that makes the app pleasant and easy to scan, without changing how estimation works.
+   - Done when: Home and Room screens share one vintage look with decorative imagery (inline SVG/CSS, identical for every Participant); rules, copy, roles and realtime behavior are unchanged.
+5. **US-005 Theme selection** (presentation only)
+   - Value: each Participant can pick the theme that is comfortable for them.
+   - Done when: a Participant chooses one of six themes (Vintage default, Light, Dark, Ocean, Sunny, Forest) with themed imagery; the choice is per device in `localStorage` and never sent over realtime.
 
 ## Success criteria
 1. Host and Guest in separate browser contexts see roster updates within 2 s.
@@ -27,6 +33,7 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
 4. Create > join > vote > reveal > revote > reveal works without a page reload.
 5. After reveal, all clients show identical votes, grouped counts per card value and participation count.
 6. The public Vercel URL passes the Playwright happy-path e2e.
+7. Switching theme never changes room state or sends a realtime message.
 
 ## Out of scope
 - Login, accounts, roles beyond Host/Participant.
@@ -34,13 +41,15 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
 - Round history, export, analytics.
 - Host migration (Host closing the tab ends the room).
 - Backlog or Jira integration.
-- Timers, chat, avatars, themes, custom decks, spectators, localization.
+- Timers, chat, avatars, custom decks, spectators, localization.
+- Room-wide or Host-controlled theme.
 
 ## Tech stack
 - Frontend: React 19 + strict TypeScript + Vite + Tailwind. Rationale: fast setup, typed UI, stable selectors for tests.
 - Realtime: Supabase Realtime Broadcast only, no tables. Rationale: real-time without writing a server; the Host tab owns room state (pure reducer), Guests send intents, the Host publishes state. Config via Vite env vars (Supabase URL + anon key); no secrets committed.
 - Hosting: Vercel. Rationale: free public demo URL.
 - Testing: Vitest for domain logic; Playwright e2e with separate Host and Guest contexts, authored and run through Playwright MCP, also runnable against the deployed Vercel URL. Rationale: fast logic checks plus real multi-user verification.
+- US-004 and US-005 add no new libraries; they use the existing Tailwind build, inline SVG and CSS.
 
 ## Open decisions
-None open. See [decisions](knowledge/decisions.md): D-005, D-016, D-019.
+None open. See [decisions](knowledge/decisions.md): D-005, D-016, D-025, D-026, D-027.
