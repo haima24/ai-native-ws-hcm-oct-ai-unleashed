@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { isWellFormedRoomCode, normalizeRoomCode, validateDisplayName } from '../../domain/room'
+import HomeIllustration from './HomeIllustration'
 import type { UseRoomConnection } from './useRoomConnection'
 
 const NAME_STORAGE_KEY = 'story-pointing:display-name'
@@ -26,10 +27,10 @@ const NAME_ERRORS = {
 } as const
 
 const input =
-  'w-full rounded border border-slate-400 bg-white px-3 py-2 text-base text-[#263238] focus:outline-2 focus:outline-offset-2 focus:outline-[#005FCC]'
+  'w-full rounded border border-rule bg-paper px-3 py-2 text-base text-ink focus:outline-2 focus:outline-offset-2 focus:outline-focus'
 const button =
-  'min-h-11 rounded bg-[#455A64] px-4 py-2 text-base text-white focus:outline-2 focus:outline-offset-2 focus:outline-[#005FCC] disabled:opacity-50'
-const errorText = 'mt-1 text-sm text-[#B3261E]'
+  'min-h-11 rounded bg-accent px-4 py-2 text-base text-paper focus:outline-2 focus:outline-offset-2 focus:outline-focus disabled:opacity-50'
+const errorText = 'mt-1 text-sm text-danger'
 
 function FieldError({ id, message }: { id: string; message: string | null }) {
   if (!message) return null
@@ -82,12 +83,18 @@ export default function HomePage({ connection }: { connection: UseRoomConnection
   const joinFailure = failure?.form === 'join' ? failure.kind : null
 
   return (
-    <main className="mx-auto max-w-3xl p-3 text-[#263238] sm:p-4 lg:p-6">
-      <h1 className="text-3xl font-semibold">Story Pointing</h1>
-      <p className="mt-1 text-[#546E7A]">Estimate together, without signing up.</p>
+    <main className="mx-auto max-w-3xl p-3 text-ink sm:p-4 lg:p-6">
+      <div className="flex items-center gap-4">
+        <HomeIllustration className="h-16 w-16 shrink-0 sm:h-24 sm:w-24" />
+        <div>
+          <h1 className="text-3xl font-semibold">Story Pointing</h1>
+          <p className="mt-1 text-ink-muted">Estimate together, without signing up.</p>
+        </div>
+      </div>
+      <div aria-hidden="true" className="ornament-divider mt-4" />
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <section aria-labelledby="create-heading" className="rounded bg-[#F1F3F4] p-4">
+        <section aria-labelledby="create-heading" className="ornate rounded border border-rule bg-panel p-4">
           <h2 id="create-heading" className="text-xl font-semibold">
             Create room
           </h2>
@@ -121,7 +128,7 @@ export default function HomePage({ connection }: { connection: UseRoomConnection
           </form>
         </section>
 
-        <section aria-labelledby="join-heading" className="rounded bg-[#F1F3F4] p-4">
+        <section aria-labelledby="join-heading" className="ornate rounded border border-rule bg-panel p-4">
           <h2 id="join-heading" className="text-xl font-semibold">
             Join room
           </h2>

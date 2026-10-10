@@ -5,13 +5,13 @@ As the Host, I want to reveal the team's votes and start a revote, so that every
 
 - MVP feature: US-003 from [product brief](../product-brief.md)
 - Brief success criteria: 2 (values remain hidden until reveal); 3 (Host-only reveal/revote); 4 (full flow without reload); 5 (identical results for all clients)
-- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-008 (Accepted), D-009 (Accepted), D-010 (Accepted), D-014 (Accepted), D-018 (Accepted), D-019 (Accepted), D-015 (Accepted), D-021 (Accepted), D-022 (Accepted), D-023 (Accepted)
+- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-008 (Accepted), D-014 (Accepted), D-018 (Accepted), D-021 (Accepted), D-022 (Accepted), D-023 (Accepted), D-024 (Accepted; supersedes D-009, D-010, D-015 and D-019 for US-003 Results).
 
 ## Scope
 **In scope**
 - Host-only Reveal and Revote actions, including enforcement when a Guest sends either intent.
 - Revealing the current round's votes to all current Participants.
-- Per-Participant vote display and the Average, Consensus and participation count.
+- Per-Participant vote display, grouped vote counts and participation count.
 - Returning the same room to `voting` with all votes cleared when the Host starts a Revote.
 - Rejecting stale vote intents from an earlier round.
 
@@ -51,23 +51,19 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 - **And** a cast `?` is shown as `?`, not `No vote`
 - **And** all connected Participants see the same values for the same current room state
 
-### AC-003-05 Calculate Average
+### AC-003-05 Show grouped vote counts
 - **Given** the room is in phase `revealed`
-- **When** at least one current Participant has an accepted numeric vote
-- **Then** `Average` is the arithmetic mean of those numeric votes; `?` and `No vote` are excluded
-- **And** the displayed value is rounded to the nearest hundredth, with an exact midpoint rounded up, and trailing zeroes are omitted (for example, an exact mean of `0.125` displays as `0.13`)
-- **When** there are no accepted numeric votes
-- **Then** `Average` displays `—`
+- **When** a Participant views Results
+- **Then** Results show one entry for each card value cast by at least one current Participant, with the count for that value (for example, `1 vote 2`, `5 votes 3`)
+- **And** `?` is grouped and counted as its own card value
+- **And** Participants without an accepted vote are not included in any card-value count
 
-### AC-003-06 Calculate Consensus
-- **Given** the room is in phase `revealed` and at least one current Participant has an accepted numeric vote
-- **When** all numeric votes are equal
-- **Then** `Consensus` displays `Yes`
-- **When** the numeric votes are not all equal
-- **Then** `Consensus` displays `No`
-- **And** `?` and `No vote` do not affect Consensus
-- **When** there are no accepted numeric votes
-- **Then** `Consensus` displays `—`
+### AC-003-06 Order and visualize grouped vote counts
+- **Given** the room is in phase `revealed` and Results contain grouped vote counts
+- **When** a Participant views Results
+- **Then** numeric card values are ordered from lowest to highest, with `?` after all numeric values
+- **And** the suggested simple visualization is a compact horizontal bar per card value, labeled with its value and vote count
+- **And** all connected Participants see the same grouped counts and ordering for the same current room state
 
 ### AC-003-07 Show participation count
 - **Given** the room is in phase `revealed`
@@ -85,7 +81,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 - **Given** a Guest with an accepted vote leaves while the room is in phase `voting` or `revealed`
 - **When** the leave is reflected in the current Players roster (US-001)
 - **Then** that Guest is removed from Players for all connected Participants
-- **And** if the room is `revealed`, the Guest is removed from Results and their vote is excluded from Average, Consensus and the participation count
+- **And** if the room is `revealed`, the Guest is removed from Results, their vote is excluded from its grouped count, and the participation count is updated
 - **And** if the room is `voting`, their vote is not shown and is excluded if the Host later reveals the round
 - **And** all remaining Participants see the same current room state and, when revealed, the same updated Results
 
@@ -132,11 +128,11 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 2. Only the Host can Reveal or Revote. Guests never see those controls, and the Host ignores those intents from non-Host senders (D-007).
 3. Reveal requires at least one accepted vote (Accepted via D-021). A pending selection is not an accepted vote (US-002); when there are none, the Host sees the AC-003-02 message and the phase stays `voting`.
 4. On Reveal, show the current Players roster's accepted vote values. Show `No vote` for a current Participant without a vote; show a cast `?` literally. `?` is distinct from no vote (glossary).
-5. Average is the arithmetic mean of current Participants' numeric votes; exclude `?` and `No vote` (D-009). Round to the nearest hundredth with exact midpoint rounded up, omit trailing zeroes, and display `—` if there are no numeric votes (Accepted via D-015). Average is computed with integer arithmetic (sum / count, rounded half up to two decimals) to avoid floating point errors.
-6. Consensus is `Yes` if at least one numeric vote exists and all numeric votes are equal; otherwise `No` (D-010, D-019). Display `—` when there are no numeric votes (Accepted via D-015). A card `0` is a numeric vote: it counts in Average and Consensus (only `0` votes give Average `0` and Consensus `Yes`).
+5. Group current Participants' accepted votes by card value and show each value's count. Include `?` as a distinct group and exclude `No vote`.
+6. Order numeric card values from lowest to highest and place `?` after numeric values. A compact horizontal bar per card value, labeled with its value and count, is the suggested visualization.
 7. Show `<voted> of <participants> voted`; count accepted `?` as voted. The denominator is the current Players roster (Accepted via D-022).
-8. A Guest joining in `revealed` has no vote under US-001. They appear as `No vote`; their presence changes only the participation count, not the existing votes, Average or Consensus (Accepted via D-023).
-9. A Revote clears accepted votes, pending local selections, per-Participant revealed values, Average, Consensus and participation count; it increments the round identifier and retains the same room (D-008, D-018).
+8. A Guest joining in `revealed` has no vote under US-001. They appear as `No vote`; their presence changes only the participation denominator, not existing vote groups (Accepted via D-023).
+9. A Revote clears accepted votes, pending local selections, per-Participant revealed values, grouped vote counts and participation count; it increments the round identifier and retains the same room (D-008, D-018).
 10. A vote intent from a previous round is rejected (D-018). An action that is unauthorized or invalid for the current phase leaves room state unchanged.
 11. The current Players roster defines the result population. When a Participant leaves, they are removed from Results and their vote is excluded; in `voting`, their vote is excluded if the Host later reveals the round. The live roster/leave behavior itself is specified in US-001 (Accepted via D-023).
 
@@ -146,9 +142,9 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 | AC-003-01 | 4, 5 | D-004, D-006 |
 | AC-003-02 | US-003 Done when | D-021 |
 | AC-003-03 | 2, 3 | D-005, D-007 |
-| AC-003-04 | 5 | D-005, D-009, D-011 |
-| AC-003-05 | 5 | D-009, D-015 |
-| AC-003-06 | 5 | D-010, D-015, D-019 |
+| AC-003-04 | 5 | D-005, D-011 |
+| AC-003-05 | 5 | D-024 |
+| AC-003-06 | 5 | D-024 |
 | AC-003-07 | UI/UX Results | D-022 |
 | AC-003-08 | 5; US-001 mid-round join rule | D-023 |
 | AC-003-09 | 5; US-001 leave behavior | US-001 AC-001-09; D-023 |
@@ -168,7 +164,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 | # | Question or assumption | Type (question / reversible assumption) | Status |
 |---|---|---|---|
 | 1 | Reveal is blocked until at least one vote is accepted, with the exact message in AC-003-02. | reversible assumption | Accepted via D-021 |
-| 2 | Average is rounded to at most two decimals; exact midpoints round up, trailing zeroes are omitted, and no numeric votes shows `—` for Average and Consensus. | reversible assumption | Accepted via D-015 |
+| 2 | Results show counts grouped by accepted card value, with numeric values ascending and `?` last; a compact horizontal bar per value is the suggested visualization. | reversible assumption | Accepted via D-024 |
 | 3 | Show `<voted> of <participants> voted`, including `?` as a vote and using the current roster as denominator. | reversible assumption | Accepted via D-022 |
 | 4 | A Guest may join while `revealed` with no vote, per US-001; the Guest appears as `No vote` and changes the participation denominator only. | reversible assumption | Accepted via D-023 |
 | 5 | A Participant leaving is removed from the result population and their vote is excluded, including when the phase is already `revealed`. | reversible assumption | Accepted via D-023 |
@@ -178,4 +174,4 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 - INVEST check: Small and testable as the final phase of one room round; Results and Revote remain together because they share the revealed state.
 - The round identifier (AC-003-10) and wrong-phase or non-Host intents (AC-003-12, AC-003-03, AC-003-11 intent part) have no UI control and are verified at unit or protocol level.
 - Live recalculation after Reveal for AC-003-09 is lower priority.
-- Material issue: The vote acknowledgement contract is owned by US-002 and remains the only open item.
+- Material issue: The vote acknowledgement contract is owned by US-002 and remains open.

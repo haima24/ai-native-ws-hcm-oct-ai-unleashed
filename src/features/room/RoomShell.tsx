@@ -10,7 +10,7 @@ const WAIT_FOR_REVEAL = 'Waiting for Host to reveal.'
 const WAIT_FOR_REVOTE = 'Waiting for Host to start a revote.'
 
 const primaryButton =
-  'min-h-11 rounded bg-[#455A64] px-4 py-2 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005FCC]'
+  'min-h-11 rounded bg-accent px-4 py-2 text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 type CopyState = 'idle' | 'copied' | 'failed'
 
@@ -52,15 +52,16 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
 
   if (hostLeft) {
     return (
-      <main className="mx-auto max-w-3xl p-3 text-[#263238] sm:p-4 lg:p-6">
+      <main className="mx-auto max-w-3xl p-3 text-ink sm:p-4 lg:p-6">
         <h1 className="text-3xl font-semibold">Story Pointing</h1>
-        <p role="alert" className="mt-4 text-[#B3261E]">
+        <div aria-hidden="true" className="ornament-divider mt-3" />
+        <p role="alert" className="mt-4 text-danger">
           {HOST_LEFT_MESSAGE}
         </p>
         <button
           type="button"
           onClick={onReturnHome}
-          className="mt-4 min-h-11 rounded bg-[#455A64] px-4 py-2 text-white focus:outline-2 focus:outline-offset-2 focus:outline-[#005FCC]"
+          className="mt-4 min-h-11 rounded bg-accent px-4 py-2 text-paper focus:outline-2 focus:outline-offset-2 focus:outline-focus"
         >
           Return to Home
         </button>
@@ -69,7 +70,7 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-3 text-[#263238] sm:p-4 lg:p-6">
+    <main className="mx-auto max-w-5xl p-3 text-ink sm:p-4 lg:p-6">
       <header className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <h1 className="text-2xl font-semibold">Story Pointing</h1>
         <p>
@@ -78,15 +79,16 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
         <button
           type="button"
           onClick={() => void copyLink()}
-          className="min-h-11 rounded bg-[#455A64] px-4 py-2 text-white focus:outline-2 focus:outline-offset-2 focus:outline-[#005FCC]"
+          className="min-h-11 rounded bg-accent px-4 py-2 text-paper focus:outline-2 focus:outline-offset-2 focus:outline-focus"
         >
           Copy link
         </button>
         {copy === 'copied' && <p role="status">Link copied</p>}
       </header>
+      <div aria-hidden="true" className="ornament-divider mt-3" />
       {copy === 'failed' && (
         <div className="mt-2">
-          <p role="alert" className="text-[#B3261E]">
+          <p role="alert" className="text-danger">
             Could not copy link. Select and copy the link.
           </p>
           <input
@@ -94,18 +96,18 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
             aria-label="Room link"
             value={link}
             onFocus={(e) => e.target.select()}
-            className="mt-1 w-full rounded border border-slate-400 px-3 py-2"
+            className="mt-1 w-full rounded border border-rule bg-paper px-3 py-2 text-ink focus:outline-2 focus:outline-offset-2 focus:outline-focus"
           />
         </div>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-[#B3261E]">
+        <p role="alert" className="mt-2 text-danger">
           {error}
         </p>
       )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-6">
-        <section aria-labelledby="players-heading" className="rounded bg-[#F1F3F4] p-3">
+        <section aria-labelledby="players-heading" className="ornate rounded border border-rule bg-panel p-3">
           <h2 id="players-heading" className="text-lg font-semibold">
             Players ({view.participants.length})
           </h2>
@@ -113,9 +115,9 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
             {view.participants.map((p) => (
               <li key={p.participantId} className="break-words">
                 {p.displayName}
-                {p.role === 'host' && <span className="text-[#546E7A]"> · Host</span>}
-                {p.participantId === session.participantId && <span className="text-[#546E7A]"> · You</span>}
-                <span className="text-[#546E7A]">
+                {p.role === 'host' && <span className="text-ink-muted"> · Host</span>}
+                {p.participantId === session.participantId && <span className="text-ink-muted"> · You</span>}
+                <span className="text-ink-muted">
                   {' · '}
                   <span data-testid="player-vote">{voteText(p.participantId, p.hasVoted)}</span>
                 </span>
@@ -128,7 +130,7 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
             ref={phaseHeadingRef}
             tabIndex={-1}
             data-testid="phase-heading"
-            className="w-fit text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005FCC]"
+            className="w-fit text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             Phase: <span data-testid="room-phase">{view.phase}</span>
           </h2>
@@ -150,13 +152,13 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
                 </button>
               )}
               {showRevealError && (
-                <p id="reveal-error" role="alert" data-testid="reveal-error" className="mt-2 text-[#B3261E]">
+                <p id="reveal-error" role="alert" data-testid="reveal-error" className="mt-2 text-danger">
                   {REVEAL_ERROR_MESSAGE}
                 </p>
               )}
             </div>
           ) : (
-            <p data-testid="phase-waiting" className="mt-4 text-[#546E7A]">
+            <p data-testid="phase-waiting" className="mt-4 text-ink-muted">
               {revealed ? WAIT_FOR_REVOTE : WAIT_FOR_REVEAL}
             </p>
           )}
