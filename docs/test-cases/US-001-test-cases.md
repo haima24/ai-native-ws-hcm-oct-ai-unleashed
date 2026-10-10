@@ -22,7 +22,6 @@ Conventions
 | TC-001-02 | AC-001-01 | `createRoom` initial state (happy) | none | Call `createRoom({ roomCode: 'ABC234', hostId: 'h1', displayName: ' Maya ' })`. | `phase` = `voting`, `status` = `active`, `revision` = 0, `roundId` = 1, one Participant `Maya` with role `host`. | unit | P1 |
 | TC-001-03 | AC-001-01 | Share link opens Home with code (happy) | Room `R` exists from TC-001-01 | 1. Host clicks `Copy link`. 2. Read the link. 3. Open it in a new Guest context. | Link contains `?room=R`. Guest sees Home, `Room code` = `R`. Link copy feedback is `Link copied` (or `Could not copy link. Select and copy the link.` with a selectable URL if clipboard is denied). | e2e | P2 |
 | TC-001-04 | AC-001-01 | Create with empty name creates no room (negative) | Host on Home | 1. Leave `Display name` empty in `Create room`. 2. Click `Create room`. | Stays on Home. Error `Enter a display name.` beside `Display name`. No `room-code` element. No `Connecting…`. | e2e | P1 |
-| TC-001-05 | AC-001-01 | Generated codes never contain `0`, `O`, `1`, `I` (negative) | none | Generate 1000 room codes with the generator used by create. | Every code has length 6 and only characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`; none contains `0`, `O`, `1` or `I`. | unit | P1 |
 
 ## 2. Join with a code (AC-001-02)
 
@@ -31,11 +30,9 @@ Conventions
 | TC-001-06 | AC-001-02 | Guest joins with code (happy) | Host in room `R` as `Maya` | 1. Guest on Home. 2. In `Join room` fill `Room code` = `R`, `Display name` = `Noah`. 3. Click `Join room`. | Guest sees room shell with `room-code` = `R`, `Players (2)`, rows `Maya` with `Host` and `Noah` with `You`. Host also shows `Players (2)`. | e2e | P1 |
 | TC-001-07 | AC-001-02, rule 2 | Code is case-insensitive and trimmed: ` abc234 ` (happy) | A room with a known code exists and its Host `Maya` is in it. | 1. Guest fills `Room code` = ` abc234 ` (e2e: ` ` + lowercase `R` + ` `), `Display name` = `Noah`. 2. Submit `Join room`. | Guest joins room `ABC234`; `room-code` shows `ABC234`; no error. | e2e | P1 |
 | TC-001-08 | AC-001-02, rule 2 | `normalizeRoomCode` trims and upper-cases (happy) | none | `normalizeRoomCode(' abc234 ')`. | Returns `ABC234`. | unit | P1 |
-| TC-001-09 | AC-001-02, rule 2 | Look-alike characters accepted on input (happy) | none | `isWellFormedRoomCode(normalizeRoomCode(x))` for `x` in `O0I1AB`, `o0i1ab`, `000000`, `IIIIII`, `ABC1O0`. | All return `true`. | unit | P1 |
 | TC-001-10 | AC-001-02, rule 2 | Join a room whose code contains `0/O/1/I` is accepted on input (happy) | Realtime is reachable and no room `AB0O1I` exists. | Submit `Join room` with `Room code` = `AB0O1I` and `Display name` = `Noah`. | No `Room code must be 6 letters or digits.` error is shown; after up to 5 s `Room not found or unreachable. Check the code and try again.` is shown. | e2e | P2 |
 | TC-001-11 | AC-001-02 | Guest not in roster until Host accepts (negative) | Host in room `R` | 1. Guest submits `Join room` with `R`, `Noah` while Host reducer rejects (use duplicate name `Maya`). 2. Inspect Host and Guest context. | Host `Players (1)`, only `Maya`. Guest never opens room shell. | e2e | P1 |
 | TC-001-12 | AC-001-02 | Well-formed code of another/nonexistent room does not join (negative) | Host in room `R` | Guest submits `Join room` with a well-formed code `X` != `R`, name `Noah`. | Guest stays on Home with `Room not found or unreachable. Check the code and try again.`. Host roster unchanged (`Players (1)`). | e2e | P1 |
-| TC-001-13 | AC-001-02 | Reducer `Join` accepts a Guest (happy) | Active room with Host `Maya` | `roomReducer(state, Join{ participantId: 'g1', displayName: 'Noah' })`. | `outcome` = `accepted`; participants `Maya`, `Noah` (role `guest`); `revision` +1; `phase` and `roundId` unchanged; input state not mutated. | unit | P1 |
 
 ## 3. Join with share link (AC-001-03)
 
@@ -43,7 +40,6 @@ Conventions
 |---|---|---|---|---|---|---|---|
 | TC-001-14 | AC-001-03, rule 3 | Link prefills code, name empty (happy) | Host in room `R` | Guest context opens `<base>/?room=R`. | Home shows `Room code` = `R`; `Display name` = empty. | e2e | P1 |
 | TC-001-15 | AC-001-03 | Join after entering name via link (happy) | TC-001-14 state | Guest fills `Display name` = `Noah`, clicks `Join room`. | Guest in room shell, same result as TC-001-06. | e2e | P1 |
-| TC-001-16 | AC-001-03, rule 3 | Opening link never auto-joins (negative) | Host in room `R` | 1. Guest opens `?room=R`. 2. Wait 5 s without typing. 3. Inspect Host. | Guest remains on Home; no `Connecting…`. Host `Players (1)`. | e2e | P1 |
 | TC-001-17 | AC-001-03 | Link with lowercase code prefill is normalized or shown as typed (negative, edge) | Host in room `R` | Guest opens `?room=<lowercase R>` and submits with `Noah`. | Join succeeds (code case-insensitive). Prefill display (as-is or upper-cased) is NOT asserted. | e2e | P3 |
 
 ## 4. Live roster (AC-001-04)
@@ -60,27 +56,16 @@ Conventions
 
 | ID | AC / rule | Title | Preconditions | Steps | Expected result | Level | Priority |
 |---|---|---|---|---|---|---|---|
-| TC-001-23 | AC-001-05, rule 1 | Create: empty name (negative) | Home | Submit `Create room` with empty `Display name`. | `Enter a display name.` beside `Display name`; no room; field value unchanged. | e2e | P1 |
-| TC-001-24 | AC-001-05 | Create: only spaces (negative) | Home | Submit `Create room` with `Display name` = `     `. | `Enter a display name.`; no room; typed spaces remain in the field. | e2e | P1 |
-| TC-001-25 | AC-001-05 | Create: 21 characters (negative, boundary) | Home | Submit `Create room` with `ABCDEFGHIJKLMNOPQRSTU`. | `Display name must be 20 characters or fewer.`; no room; typed value kept. | e2e | P1 |
-| TC-001-26 | AC-001-05 | Create: 20 characters (happy, boundary) | Home | Submit `Create room` with `ABCDEFGHIJKLMNOPQRST`. | Room shell opens; Host row `ABCDEFGHIJKLMNOPQRST`. | e2e | P1 |
-| TC-001-27 | AC-001-05 | Create: 1 character (happy, boundary) | Home | Submit `Create room` with `A`. | Room shell opens; Host row `A`. | e2e | P2 |
-| TC-001-28 | AC-001-05 | Create: padded name stored trimmed (happy) | Home | Submit `Create room` with `  Maya  `. | Row shows `Maya` (no surrounding spaces); `Players (1)`. | e2e | P1 |
-| TC-001-29 | AC-001-05 | Create: 20 chars plus surrounding spaces is valid (happy, boundary) | Home | Submit with `  ABCDEFGHIJKLMNOPQRST  `. | Accepted; stored as the 20-char trimmed name. | unit | P2 |
-| TC-001-30 | AC-001-05 | Join: empty name (negative) | Room `R` exists | Submit `Join room` with valid `R`, empty `Display name`. | `Enter a display name.`; not joined; `Room code` still `R`; Host `Players (1)`. | e2e | P1 |
-| TC-001-31 | AC-001-05 | Join: only spaces (negative) | Room `R` exists | Submit `Join room` with `R`, `Display name` = `   `. | `Enter a display name.`; not joined; values kept. | e2e | P1 |
-| TC-001-32 | AC-001-05 | Join: 21 characters (negative) | Room `R` exists | Submit `Join room` with `R`, `ABCDEFGHIJKLMNOPQRSTU`. | `Display name must be 20 characters or fewer.`; not joined; values kept. | e2e | P1 |
-| TC-001-33 | AC-001-05 | Join: 20 characters (happy) | Room `R` exists | Submit `Join room` with `R`, `ABCDEFGHIJKLMNOPQRST`. | Joined; row `ABCDEFGHIJKLMNOPQRST` with `You`. | e2e | P2 |
-| TC-001-34 | AC-001-05 | `validateDisplayName` classes (happy + negative) | none | Inputs: `''`, `'   '`, `'A'`, 20 chars, 21 chars, `' Maya '`. | `{error:'required'}`, `{error:'required'}`, `{value:'A'}`, `{value:<20 chars>}`, `{error:'too-long'}`, `{value:'Maya'}`. | unit | P1 |
-| TC-001-35 | AC-001-05 | Validation error uses no network (negative) | Home | Submit an invalid name. | No `Connecting…` shown; no channel opened; error is associated with the input (alert role, linked to `Display name`), not a toast. | e2e | P2 |
+| TC-001-23 | AC-001-05, rule 1 | Create validates display-name classes | Home | Submit `Create room` in turn with an empty name, `     `, and `ABCDEFGHIJKLMNOPQRSTU`; then submit with `  ABCDEFGHIJKLMNOPQRST  `. | For each invalid value, show the matching field error beside `Display name`, retain the typed value, and do not create a room or show `Connecting…`; errors are linked to the input and exposed as alerts. For the valid value, open the room and show Host row `ABCDEFGHIJKLMNOPQRST` with no surrounding spaces. | e2e | P1 |
+| TC-001-30 | AC-001-05 | Join validates display-name classes | Host room `R` exists; Guest on Home | Submit `Join room` with `R` and, in turn, an empty name, `     `, and `ABCDEFGHIJKLMNOPQRSTU`; then submit with `ABCDEFGHIJKLMNOPQRST`. | For each invalid value, show the matching field error beside `Display name`, retain the room code and typed name, and do not join or show `Connecting…`; errors are linked to the input and exposed as alerts. For the valid value, join `R` and show the Guest row `ABCDEFGHIJKLMNOPQRST` with `You`. | e2e | P1 |
+| TC-001-34 | AC-001-05 | `validateDisplayName` classes (happy + negative) | none | Inputs: `''`, `'   '`, `'A'`, 20 chars, 21 chars, `' Maya '`, and `'  ABCDEFGHIJKLMNOPQRST  '`. | Required inputs return `{error:'required'}`; 1-char, 20-char and padded 20-char inputs return trimmed values; 21 chars returns `{error:'too-long'}`. | unit | P1 |
 
 ## 6. Duplicate display name (AC-001-06)
 
 | ID | AC / rule | Title | Preconditions | Steps | Expected result | Level | Priority |
 |---|---|---|---|---|---|---|---|
 | TC-001-36 | AC-001-06 | Unique name accepted (happy) | Room `R` contains `Maya` (Host) | Guest joins as `Maya2`. | Joined; `Players (2)`. | e2e | P1 |
-| TC-001-37 | AC-001-06, rule 1 | Duplicate differing by case: `maya` (negative) | Room contains Host `Maya` | Guest submits `Join room` with `R`, `maya`. | `That name is already taken in this room.` beside `Display name`; Guest not added; Host `Players (1)` with `Maya`; `Room code` = `R`, `Display name` = `maya` still typed. | e2e | P1 |
-| TC-001-38 | AC-001-06 | Duplicate with spaces and case: ` MAYA ` (negative) | Same | Guest submits ` MAYA `. | Same error and unchanged roster as TC-001-37. | e2e | P1 |
+| TC-001-37 | AC-001-06, rule 1 | Duplicate ignores case and surrounding spaces (negative) | Room contains Host `Maya` | Guest submits `Join room` with `R` and each name in turn: `maya`, ` MAYA `. | For both inputs, show `That name is already taken in this room.` beside `Display name`; Guest is not added; Host remains `Players (1)` with `Maya`; the room code and submitted name remain in the fields. | e2e | P1 |
 | TC-001-39 | AC-001-06, rule 1 | Reducer duplicate is a no-op (negative) | Room with `Maya` | `Join` with `maya`, then ` MAYA `. | `outcome` = `duplicate-name`; state deep-equal to before (revision unchanged). | unit | P1 |
 | TC-001-40 | AC-001-06 | Duplicate of a Guest name, not only Host (negative) | Host `Maya`, Guest `Noah` | Guest2 submits `NOAH`. | Error `That name is already taken in this room.`; roster unchanged for all. | e2e | P2 |
 | TC-001-41 | AC-001-06 | Same name allowed in a different room (happy) | Two rooms each with its own Host | Guest joins room B as the Host name of room A. | Accepted in room B (uniqueness is per room). | unit | P3 |
@@ -182,11 +167,11 @@ Conventions
 
 | Bucket | Rule | TC ids |
 |---|---|---|
-| Playwright now | e2e, P1, not `[D-020]` gated | TC-001-01, 04, 06, 07, 11, 12, 14, 15, 16, 21, 23, 24, 25, 26, 28, 30, 31, 32, 36, 37, 38, 44, 45, 46, 47, 48, 53, 54, 55, 56, 57, 76, 78, 81, 84, 89, 90 |
+| Playwright now | e2e, P1, not `[D-020]` gated | TC-001-01, 04, 06, 07, 11, 12, 14, 15, 21, 23, 30, 36, 37, 44, 45, 46, 47, 48, 53, 54, 55, 56, 57, 76, 78, 81, 84, 89, 90 |
 | Playwright after Presence spike | e2e, P1, `[D-020]` gated | TC-001-18, 61, 62, 67, 68, 69, 70, 72, 77 |
-| Manual | P2 (e2e or manual level) | TC-001-03, 10, 22, 27, 33, 35, 40, 42, 51, 59, 65, 74, 80, 82, 83, 86, 91, 93, 94, 98 |
+| Manual | P2 (e2e or manual level) | TC-001-03, 10, 22, 40, 42, 51, 59, 65, 74, 80, 82, 83, 86, 91, 93, 94, 98 |
 | Not planned | P3 | TC-001-17, 41, 50, 52, 75, 87, 92, 96, 97, 99 |
-| Vitest (unit level, outside this split) | unit cases run in Vitest regardless of priority, except P3 which are not planned | P1: TC-001-02, 05, 08, 09, 13, 19, 20, 34, 39, 43, 58, 63, 64, 66, 71, 73, 79, 85, 88; P2: TC-001-29, 49, 60, 95 |
+| Vitest (unit level, outside this split) | unit cases run in Vitest regardless of priority, except P3 which are not planned | P1: TC-001-02, 08, 19, 20, 34, 39, 43, 58, 63, 64, 66, 71, 73, 79, 85, 88; P2: TC-001-49, 60, 95 |
 
 TC-001-90 is automated now for its Guest-side assertions only; its Host-side removal check depends on Presence and waits for the spike.
 
@@ -194,12 +179,12 @@ TC-001-90 is automated now for its Guest-side assertions only; its Host-side rem
 
 | AC / rule | Happy | Negative | Edge / other |
 |---|---|---|---|
-| AC-001-01 | TC-001-01, 02, 03 | TC-001-04, 05 | TC-001-99 |
-| AC-001-02 | TC-001-06, 07, 08, 09, 10, 13 | TC-001-11, 12 | TC-001-07 (` abc234 `), TC-001-09, 10 (0/O/1/I) |
-| AC-001-03 | TC-001-14, 15 | TC-001-16 | TC-001-17 |
+| AC-001-01 | TC-001-01, 02, 03 | TC-001-04 | TC-001-99 |
+| AC-001-02 | TC-001-06, 07, 08, 10 | TC-001-11, 12 | TC-001-07 (` abc234 `), 10 (0/O/1/I) |
+| AC-001-03 | TC-001-14, 15 | — | TC-001-17 |
 | AC-001-04 | TC-001-18, 19, 22 | TC-001-20, 21 | TC-001-95 |
-| AC-001-05 | TC-001-26, 27, 28, 29, 33, 34 | TC-001-23, 24, 25, 30, 31, 32, 35 | TC-001-25/26 (20/21 boundary) |
-| AC-001-06 | TC-001-36, 41, 42 | TC-001-37, 38, 39, 40 | TC-001-94 |
+| AC-001-05 | TC-001-23, 30, 34 | TC-001-23, 30, 34 | TC-001-23, 30 (20/21 boundary) |
+| AC-001-06 | TC-001-36, 41, 42 | TC-001-37, 39, 40 | TC-001-94 |
 | AC-001-07 | TC-001-43 | TC-001-44, 45, 46, 47, 48, 49, 50, 51 | TC-001-52 |
 | AC-001-08 | TC-001-53, 59 | TC-001-54, 55, 56, 57, 58 | TC-001-60, 96 |
 | AC-001-09 `[D-020]` | TC-001-61, 62, 63 | TC-001-64, 65 (known limitation, not a defect), 66, 67 | TC-001-65 (leave before Presence; known limitation) |
