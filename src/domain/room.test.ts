@@ -448,8 +448,7 @@ describe('US-003 domain: public view results validation', () => {
       { participantId: 'h1', value: '5' },
       { participantId: 'g1', value: null },
     ],
-    average: '5',
-    consensus: 'Yes',
+    groups: [{ card: '5', count: 1 }],
     voted: 1,
     participants: 2,
   }
@@ -470,15 +469,28 @@ describe('US-003 domain: public view results validation', () => {
 
   it('TC-003-12 malformed results views are rejected and the Guest keeps its view', () => {
     const { entries: _entries, ...withoutEntries } = results
+    const { groups: _groups, ...withoutGroups } = results
+    const badGroups = (groups: unknown) => view({ phase: 'revealed', results: { ...results, groups } })
     const bad = [
       view({ phase: 'voting', results }),
       view({ phase: 'revealed', results: null }),
       view({ phase: 'revealed', results: undefined }),
       view({ phase: 'revealed', results: withoutEntries }),
       view({ phase: 'revealed', results: { ...results, entries: [{ participantId: 'h1', value: '4' }] } }),
-      view({ phase: 'revealed', results: { ...results, consensus: 'Maybe' } }),
       view({ phase: 'revealed', results: { ...results, voted: '1' } }),
       view({ phase: 'revealed', results: 'x' }),
+      view({ phase: 'revealed', results: withoutGroups }),
+      badGroups('5'),
+      badGroups(['5']),
+      badGroups([{ card: '4', count: 1 }]),
+      badGroups([{ card: '5', count: 0 }]),
+      badGroups([{ card: '5', count: -1 }]),
+      badGroups([{ card: '5', count: 1.5 }]),
+      badGroups([{ card: '5', count: '1' }]),
+      badGroups([{ card: '8', count: 1 }, { card: '5', count: 1 }]),
+      badGroups([{ card: '13', count: 1 }, { card: '8', count: 1 }]),
+      badGroups([{ card: '?', count: 1 }, { card: '5', count: 1 }]),
+      badGroups([{ card: '5', count: 1 }, { card: '5', count: 1 }]),
     ]
     for (const incoming of bad) {
       const result = applyPublicView(current, incoming)
@@ -490,6 +502,9 @@ describe('US-003 domain: public view results validation', () => {
   it('US-003 a well-formed revealed view and a voting view without results are applied', () => {
     const revealed = applyPublicView(current, view({ phase: 'revealed', results }))
     expect(revealed.outcome).toBe('applied')
+    const ordered = [{ card: '0', count: 1 }, { card: '13', count: 2 }, { card: '?', count: 1 }]
+    expect(applyPublicView(current, view({ phase: 'revealed', results: { ...results, groups: ordered } })).outcome).toBe('applied')
+    expect(applyPublicView(current, view({ phase: 'revealed', results: { ...results, groups: [] } })).outcome).toBe('applied')
     const { results: _results, ...legacy } = view({})
     expect(applyPublicView(current, legacy).outcome).toBe('applied')
   })

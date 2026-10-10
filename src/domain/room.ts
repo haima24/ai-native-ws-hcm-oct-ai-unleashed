@@ -9,9 +9,9 @@ import type {
   RoomState,
   RoundResults,
   ResultEntry,
+  ResultGroup,
   VoteIgnoreReason,
 } from '../types/room'
-import { NO_RESULT } from './results'
 
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 export const ROOM_CODE_LENGTH = 6
@@ -169,12 +169,20 @@ const isParticipant = (v: unknown): v is Participant =>
 const isResultEntry = (v: unknown): v is ResultEntry =>
   isRecord(v) && typeof v.participantId === 'string' && (v.value === null || isCard(v.value))
 
+const isResultGroup = (v: unknown): v is ResultGroup =>
+  isRecord(v) && isCard(v.card) && Number.isInteger(v.count) && (v.count as number) > 0
+
+// Strictly increasing position in CARDS means numeric ascending, `?` last and no duplicate card.
+const isOrderedGroups = (groups: ResultGroup[]): boolean =>
+  groups.every((g, i) => i === 0 || CARDS.indexOf(groups[i - 1].card) < CARDS.indexOf(g.card))
+
 const isRoundResults = (v: unknown): v is RoundResults =>
   isRecord(v) &&
   Array.isArray(v.entries) &&
   v.entries.every(isResultEntry) &&
-  typeof v.average === 'string' &&
-  (v.consensus === 'Yes' || v.consensus === 'No' || v.consensus === NO_RESULT) &&
+  Array.isArray(v.groups) &&
+  v.groups.every(isResultGroup) &&
+  isOrderedGroups(v.groups) &&
   Number.isInteger(v.voted) &&
   Number.isInteger(v.participants)
 

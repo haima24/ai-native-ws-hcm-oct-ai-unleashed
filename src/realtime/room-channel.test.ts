@@ -628,12 +628,15 @@ describe('US-003 realtime: Host reveal and revote', () => {
         { participantId: session.participantId, value: '5' },
         { participantId: 'g1', value: '8' },
       ],
-      average: '6.5',
-      consensus: 'No',
+      groups: [
+        { card: '5', count: 1 },
+        { card: '8', count: 1 },
+      ],
       voted: 2,
       participants: 2,
     })
-    expect(JSON.stringify(published[0])).not.toMatch(/"votes"|"card"/)
+    // `groups[].card` is a published aggregate; the raw vote map must never appear.
+    expect(JSON.stringify(published[0])).not.toMatch(/"votes"/)
     expect(session.getView()).toEqual(published[0])
   })
 
@@ -747,13 +750,13 @@ describe('US-003 realtime: Host reveal and revote', () => {
     await flush()
     const afterJoin = views(channel).at(-1) as PublicView
     expect(afterJoin.phase).toBe('revealed')
-    expect(afterJoin.results).toMatchObject({ voted: 2, participants: 3, average: '6.5' })
+    expect(afterJoin.results).toMatchObject({ voted: 2, participants: 3, groups: [{ card: '5', count: 1 }, { card: '8', count: 1 }] })
     expect(afterJoin.results?.entries.find((e) => e.participantId === 'g2')?.value).toBeNull()
 
     channel.presence('leave', 'g1')
     await flush()
     const afterLeave = views(channel).at(-1) as PublicView
-    expect(afterLeave.results).toMatchObject({ voted: 1, participants: 2, average: '5', consensus: 'Yes' })
+    expect(afterLeave.results).toMatchObject({ voted: 1, participants: 2, groups: [{ card: '5', count: 1 }] })
     expect(afterLeave.results?.entries.map((e) => e.participantId)).not.toContain('g1')
   })
 

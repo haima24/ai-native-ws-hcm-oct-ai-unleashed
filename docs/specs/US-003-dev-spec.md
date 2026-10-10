@@ -1,10 +1,11 @@
 # US-003 Dev Spec: Reveal, results and revote
 
 ## Goal and non-goals
-- Goal: the Host reveals the round, every client shows identical per-Participant votes, Average, Consensus and participation, and the Host starts a Revote that clears the round.
+- Goal: the Host reveals the round, every client shows identical per-Participant votes, grouped vote counts and participation, and the Host starts a Revote that clears the round.
 - Non-goals: round history, export, next story, extra phases, network-level vote privacy (D-005), authenticating senders on Broadcast, host migration, changes to US-001 join/leave rules or US-002 card/pending UX.
 - Requirement: [US-003](../requirements/US-003-reveal-results-and-revote.md)
-- Decisions: D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-014, D-015, D-018, D-019, D-021, D-022, D-023.
+- Decisions: D-004, D-005, D-006, D-007, D-008, D-014, D-018, D-021, D-022, D-023, D-025 (supersedes D-009, D-010, D-015, D-019 for Results).
+- Note: the decisions log also has a Proposed D-025 for US-004 (vintage theme). In this spec D-025 means the Accepted grouped-counts decision.
 
 ## Dependency on the US-002 vote contract
 This spec follows the vote contract in [US-002 dev spec](US-002-dev-spec.md).
@@ -18,11 +19,11 @@ Level: U = unit/protocol only (no UI trigger), E = also e2e. Priority: **DC** de
 | AC-003-02 | E / DC | Reducer outcome `no-votes`; `reveal()` returns it; Host-only inline error | 0 votes: state identical, outcome `no-votes`; `?`-only counts as a vote; vote then retry succeeds | Host clicks Reveal with no votes: error visible, phase `voting`; after a vote Reveal works | A voter who left does not count (`Leave` deletes the vote, D-023; `computeResults` also filters by roster) |
 | AC-003-03 | E + U / DC | Guest has no Reveal control and no `reveal()`; Host registers no Reveal intent handler | Fake channel: emit `room:reveal-intent`; no state change, no publish, no handler registered | Guest sees no Reveal button and `Waiting for Host to reveal.` | Sender ids cannot be authenticated (D-005); see "Host-only enforcement" |
 | AC-003-04 | E / DC | `computeResults` entries; roster shows `results` values when `revealed` | Entries per roster member: value, `?`, `null` (No vote) | Host and Guest roster rows show same value, `?` and `No vote` | Roster order |
-| AC-003-05 | E / DC | `computeResults.average` (integer math) | Worked examples R-01..R-12 | Average text equal on both clients | Card `0` is numeric |
-| AC-003-06 | E / DC | `computeResults.consensus` | Worked examples R-01..R-12 | Consensus text equal on both clients | `?` and No vote excluded |
+| AC-003-05 | E / DC | `computeResults.groups` (one group per card cast by a current Participant); `ResultsPanel` rows with card label, bar and count text | Worked examples G-01..G-12 (TC-003-13..24); malformed `groups` (TC-003-12) | `results-group` rows and count texts equal on both clients (TC-003-25..27) | Card `0` and `?` are cards; No vote is excluded |
+| AC-003-06 | E / DC | `computeResults.groups` order (numeric ascending, `?` last); one horizontal bar per row | G-04, G-09, G-10 (ordering) | Row order and bar presence equal on both clients (TC-003-25) | Bar width is derived from published counts; it is not an independent data source |
 | AC-003-07 | E / LP | `computeResults.voted` / `participants` | Examples include `?` and No vote | Asserted in the main flow (cheap) | Denominator is the roster incl. Host |
 | AC-003-08 | E / LP | Join in `revealed` publishes recomputed results via existing `publish()` | Join in `revealed`: entry `null`, `participants + 1`, `voted` unchanged | Optional third context joins after Reveal | Guest sees results from first view (join probe accepts it) |
-| AC-003-09 | E / LP | `Leave` reducer deletes the vote (US-002, D-023); `computeResults` also filters by current roster as a defensive check | Leave in `voting` then Reveal: vote gone; Leave in `revealed` recomputes; `computeResults` ignores a vote of a non-roster id (R-11) | Optional: Guest closes page in `revealed` | Presence `leave` is the signal (US-001) |
+| AC-003-09 | E / LP | `Leave` reducer deletes the vote (US-002, D-023); `computeResults` also filters by current roster as a defensive check | Leave in `voting` then Reveal: vote gone; Leave in `revealed` recomputes; `computeResults` ignores a vote of a non-roster id (G-11) | Optional: Guest closes page in `revealed` | Presence `leave` is the signal (US-001) |
 | AC-003-10 | E + U / DC | `Revote` reducer case; clients derive empty selection from `roundId` | Phase `voting`, votes `{}`, all `hasVoted` false, roundId + 1, revision + 1; results `null` in view | Revote: roster back to `Not voted`, no results panel, cards enabled, can vote again | roundId increase itself is unit-only |
 | AC-003-11 | E + U / DC | Guest has no Revote control and no `revote()`; Host registers no Revote intent handler | As AC-003-03 with `room:revote-intent` | Guest sees no Revote button and `Waiting for Host to start a revote.` | As AC-003-03 |
 | AC-003-12 | U only / DC | Reducer phase guards; `Vote` round guard (US-002 reducer) | Reveal in `revealed` and Revote in `voting`: state identical, outcome `ignored`; vote with old roundId after Revote: no change, no revision bump | none (no UI trigger) | Stale intent outcome name follows US-002 |
@@ -37,40 +38,42 @@ Level: U = unit/protocol only (no UI trigger), E = also e2e. Priority: **DC** de
 New pure function `computeResults(votes, participants)` in `src/domain/results.ts`. Population is the current roster; votes of non-roster ids are ignored.
 
 - Entry: `{ participantId, value: Card | null }`, roster order; `null` means `No vote`.
-- Numeric votes: entries whose value is not `null` and not `?`. Card `0` is numeric.
-- Average: `sum` and `count` of numeric votes as integers. `hundredths = floor((200 * sum + count) / (2 * count))` (half up). Display: whole = `floor(h / 100)`, fraction = `h % 100`; fraction 0 omits it, a trailing zero is dropped (`6.50` -> `6.5`), otherwise two digits (`0.13`). `—` when `count = 0`.
-- Consensus: `—` when `count = 0`; `Yes` when all numeric votes are equal; otherwise `No`.
+- Group: `{ card: Card, count: number }`. One group per card cast by at least one current Participant; `count` is a positive integer. Card `0` is a card, and `?` is its own group.
+- Group order: numeric cards ascending by numeric value (`0, 1, 2, 3, 5, 8, 13, 21`), then `?` last. Entries with `null` (No vote) are in no group.
+- No average, consensus or rounding is computed (D-025).
 - Participation: `voted` = entries with a value (`?` counts); `participants` = roster size; display `<voted> of <participants> voted`.
 
-Worked examples for `src/domain/results.test.ts` (`—` is U+2014):
+Worked examples for `src/domain/results.test.ts`. Each G-xx maps to one test case; "none" means No vote:
 
-| # | Roster votes | Average | Consensus | Participation |
+| # | Test case | Roster votes | Groups (`card` count) | Participation |
 |---|---|---|---|---|
-| R-01 | A none, B none (empty) | `—` | `—` | `0 of 2 voted` |
-| R-02 | A `?`, B `?` (all `?`) | `—` | `—` | `2 of 2 voted` |
-| R-03 | A `0`, B `0` (only zeros) | `0` | `Yes` | `2 of 2 voted` |
-| R-04 | A `0`, B `?` | `0` | `Yes` | `2 of 2 voted` |
-| R-05 | seven `0`, one `1` (1/8 = 0.125) | `0.13` | `No` | `8 of 8 voted` |
-| R-06 | `5`, `5`, `8`, `8` (tie) | `6.5` | `No` | `4 of 4 voted` |
-| R-07 | `3`, `5`, `8`, `?`, none | `5.33` | `No` | `4 of 5 voted` |
-| R-08 | `5`, `5`, `?`, none | `5` | `Yes` | `3 of 4 voted` |
-| R-09 | `1`, `2`, `2` (5/3 = 1.666...) | `1.67` | `No` | `3 of 3 voted` |
-| R-10 | `13`, `21` | `17` | `No` | `2 of 2 voted` |
-| R-11 | votes `{gone: 5}`, roster A `3` | `3` | `Yes` | `1 of 1 voted` |
-| R-12 | `1` only, roster of 3 incl. 2 No vote | `1` | `Yes` | `1 of 3 voted` |
+| G-01 | TC-003-13 | A none, B none | none (empty array) | `0 of 2 voted` |
+| G-02 | TC-003-14 | A `?`, B `?` | `?` 2 | `2 of 2 voted` |
+| G-03 | TC-003-15 | A `0`, B `0` | `0` 2 | `2 of 2 voted` |
+| G-04 | TC-003-16 | A `0`, B `?` | `0` 1, `?` 1 | `2 of 2 voted` |
+| G-05 | TC-003-17 | seven `0`, one `1` | `0` 7, `1` 1 | `8 of 8 voted` |
+| G-06 | TC-003-18 | `5`, `5`, `8`, `8` | `5` 2, `8` 2 | `4 of 4 voted` |
+| G-07 | TC-003-19 | `3`, `5`, `8`, `?`, none | `3` 1, `5` 1, `8` 1, `?` 1 | `4 of 5 voted` |
+| G-08 | TC-003-20 | `5`, `5`, `?`, none | `5` 2, `?` 1 | `3 of 4 voted` |
+| G-09 | TC-003-21 | A `?`, B `21`, C `1`, D `13`, E `0`, F `8`, G `3`, H `2`, I `5` | `0` 1, `1` 1, `2` 1, `3` 1, `5` 1, `8` 1, `13` 1, `21` 1, `?` 1 | `9 of 9 voted` |
+| G-10 | TC-003-22 | `13`, `21` | `13` 1, `21` 1 | `2 of 2 voted` |
+| G-11 | TC-003-23 | votes `{gone: 5}`, roster A `3` | `3` 1 | `1 of 1 voted` |
+| G-12 | TC-003-24 | A `1`, B none, C none | `1` 1 | `1 of 3 voted` |
+
+Entries (roster order, `null` for No vote) are asserted by TC-003-11 and are not repeated per example.
 
 ## File table
 | File | Existing / new | Reason |
 |---|---|---|
 | [src/types/room.ts](../../src/types/room.ts) | Existing | `RoomAction` + `Reveal`, `Revote`; `RoomOutcome` + `no-votes`; `ResultEntry`, `RoundResults`; `PublicView.results` |
-| `src/domain/results.ts` | New | Pure `computeResults`, defensively filtered by the current roster |
-| `src/domain/results.test.ts` | New | Worked examples R-01..R-12 |
-| [src/domain/room.ts](../../src/domain/room.ts) | Existing | `Reveal` / `Revote` reducer cases; `isPublicView` validates `results`; `Leave` deleting the vote is owned by US-002 (D-023) |
+| `src/domain/results.ts` | New | Pure `computeResults` (entries, groups, participation), defensively filtered by the current roster |
+| `src/domain/results.test.ts` | New | Worked examples G-01..G-12 |
+| [src/domain/room.ts](../../src/domain/room.ts) | Existing | `Reveal` / `Revote` reducer cases; `isPublicView` validates `results` including `groups`; `Leave` deleting the vote is owned by US-002 (D-023) |
 | [src/domain/room.test.ts](../../src/domain/room.test.ts) | Existing | Reducer and view-validation tests |
 | [src/realtime/room-channel.ts](../../src/realtime/room-channel.ts) | Existing | `toPublicView` adds results when `revealed`; Host-only `reveal()` / `revote()`; no intent handlers |
 | [src/realtime/room-channel.test.ts](../../src/realtime/room-channel.test.ts) | Existing | Publish, privacy, forged-intent, join/leave-in-`revealed` tests |
 | [src/features/room/RoomShell.tsx](../../src/features/room/RoomShell.tsx) | Existing | Phase action, Guest texts, error, roster values, focus |
-| `src/features/room/ResultsPanel.tsx` | New | Average, Consensus, participation |
+| `src/features/room/ResultsPanel.tsx` | New | Grouped vote-count rows with bars, participation |
 | `src/features/room/useRoomSession.ts` | Existing, only if it wraps the session | Expose `reveal` / `revote` |
 | US-002 selection state file | Existing (US-002) | Selection derived from `roundId` |
 | `tests/e2e/US-003.spec.ts`, [tests/page-objects/RoomPage.ts](../../tests/page-objects/RoomPage.ts) | New / existing | Flow and selectors |
@@ -80,14 +83,14 @@ Owner: Host tab owns `RoomState` (D-004). Guests only render `PublicView`.
 
 ```text
 RoundResults = { entries: { participantId, value: Card | null }[];
-                 average: string; consensus: 'Yes' | 'No' | '—';
+                 groups: { card: Card; count: number }[];
                  voted: number; participants: number }
 PublicView   = existing fields + results: RoundResults | null
 ```
 - Event `room:public-view` is unchanged except for `results`. No new Broadcast events.
 - `results` is `null` in `voting` and non-null in `revealed`. `toPublicView` builds it from `computeResults(state.votes, state.participants)` on every publish, so no field in a `voting` view ever holds a card value (D-005). It must not spread `RoomState` into the view.
-- `isPublicView` rejects (malformed) a `voting` view with non-null `results` and a `revealed` view with null `results`; the guest keeps its current view.
-- Guests render published values and never recompute, so all clients show identical text (success criterion 5).
+- `isPublicView` rejects (malformed) a `voting` view with non-null `results`, a `revealed` view with null `results`, and a `revealed` view whose `results.groups` is missing or not an array. Each group must have a known card, a positive integer `count`, and the array must be in order (numeric ascending, `?` last, no duplicate card). The guest keeps its current view.
+- Guests render published values and never recompute groups, so all clients show identical rows and count texts (success criterion 5). The bar width is the only derived value: `count / max(count over groups)` of the published groups.
 
 Data path: Guest `Vote` intent -> Host reducer (`votes`, private to the Host tab) -> `voting` view (`hasVoted` only) -> Reveal -> `toPublicView` with `results` -> all clients. Revote -> `votes = {}`, `results = null`, roundId + 1. Vote intents themselves are visible on the Broadcast topic (D-005 limitation).
 
@@ -102,7 +105,7 @@ Reveal and Revote carry no sender: they are Host-local (see above).
 | `revealed` | Revote | `voting`; `votes = {}`; all `hasVoted = false`; roundId + 1; revision + 1 | — |
 | `voting` | Revote | unchanged, outcome `ignored` | revision same |
 | any | Guest-sent Reveal / Revote intent | unchanged | No handler registered; nothing published |
-| `revealed` | Guest `Join` / `Leave` (US-001) | `revealed`; revision + 1; republished with recomputed `results` (D-023) | Existing US-001 rejections |
+| `revealed` | Guest `Join` / `Leave` (US-001) | `revealed`; revision + 1; republished with recomputed `results` including `groups` and participation (D-023); a leaving Participant's card is removed from the counts and a group whose count reaches 0 disappears | Existing US-001 rejections |
 | `voting` | `Vote` with `roundId` of an earlier round | unchanged | Rejected; revision same (D-018) |
 | `revealed` | `Vote` | unchanged | Rejected (US-002) |
 | `ended` | any | unchanged | Existing guard |
@@ -120,13 +123,17 @@ Rejected and no-op results never bump revision (D-014). Revealed -> Revote on th
 | Phase heading | heading with `tabIndex={-1}` containing the existing `room-phase` span | `phase-heading` | `Phase: voting` / `Phase: revealed` |
 | Results panel | region `Results`, only when `revealed` | `results-panel` | — |
 | Results heading | heading `Results`, `tabIndex={-1}` | `results-heading` | `Results` |
-| Average value | value text only | `results-average` | e.g. `6.5`, `—` |
-| Consensus value | value text only | `results-consensus` | `Yes`, `No`, `—` |
+| Result groups | list container inside `results-panel`; rendered even with no groups (empty) | `results-groups` | — |
+| Result group row | one per group, in `groups` order, inside `results-groups`; text is card label then count text | `results-group` | e.g. `5 2 votes`, `8 1 vote` |
+| Group bar | decorative horizontal bar inside each row, `aria-hidden="true"`; inline `width` = `count / max count` as a percentage (the largest group is 100%; every bar has non-zero width) | `results-group-bar` | — |
+| Group count text | inside each row; `1 vote` when count is 1, else `<n> votes` | `results-group-count` | `1 vote`, `2 votes` |
 | Participation | full text | `results-participation` | `<voted> of <participants> voted` |
 | Roster vote cell | inside each `players-list` row | `player-vote` | `Voted` / `Not voted` in `voting` (US-002); card value, `?` or `No vote` in `revealed` |
 
 Behavior:
 - Roster rows: values come from `results.entries` when `revealed`. Rows are matched by name text.
+- Result rows: meaning is carried by the card label and count text; the bar never carries information alone. No row for No vote. With no groups the container is empty and `results-participation` still shows (G-01).
+- No `results-average` or `results-consensus` element exists (D-025). Layout follows [ui-ux.md](../design/ui-ux.md) section 5.
 - Reveal error is derived from the outcome returned by `reveal()` plus the `revision` at that time, and hidden when the view revision changes or the next Reveal succeeds; no effect needed.
 - Connection lost (`Connection lost. Reconnecting…`, owned by US-002): the Reveal/Revote button is `disabled`; the error text is unaffected.
 - Focus: after a successful Reveal or Revote the Host focuses `phase-heading` directly in the click handler (the trigger button is replaced). A failed Reveal keeps focus on the button. Guest and roster updates never move focus.
@@ -143,9 +150,9 @@ Commands from [package.json](../../package.json): `npm test` (Vitest), `npm run 
 | # | Task | Level | Command |
 |---|---|---|---|
 | 1 | Types in `src/types/room.ts` | build | `npm run build` |
-| 2 | `computeResults` tests R-01..R-12 first, then implementation | unit | `npm test -- src/domain/results.test.ts` |
+| 2 | `computeResults` tests G-01..G-12 first, then implementation | unit | `npm test -- src/domain/results.test.ts` |
 | 3 | Reducer tests first (Reveal, Revote, wrong-phase, stale vote, Join/Leave in `revealed`), then `Reveal` / `Revote` cases | unit | `npm test -- src/domain/room.test.ts` |
-| 4 | `isPublicView` validation of `results`, tests first | unit | `npm test -- src/domain/room.test.ts` |
+| 4 | `isPublicView` validation of `results` and `groups`, tests first (TC-003-12) | unit | `npm test -- src/domain/room.test.ts` |
 | 5 | `toPublicView` results; host `reveal()` / `revote()`; tests: published payload while `voting` contains no card value; forged intent ignored; Join/Leave in `revealed` republish | unit | `npm test -- src/realtime/room-channel.test.ts` |
 | 6 | UI: `RoomShell`, `ResultsPanel`, roster values, focus, disabled-while-lost | build | `npm run build` |
 | 7 | Local selection is cleared through the `voteReducer` event `round-changed` (US-002 spec) | unit/build | `npm test` |
@@ -162,7 +169,7 @@ Commands from [package.json](../../package.json): `npm test` (Vitest), `npm run 
 | 4 | ~~Connection-lost signal~~ Closed: US-002 owns the `connection` session event | — | No | — |
 | 5 | Delete a leaving Participant's vote in the `Leave` reducer | Developer | No | Yes, as in the US-002 spec (D-023); `computeResults` also filters by roster as a defensive check |
 | 6 | Doc drift: [ui-ux.md](../design/ui-ux.md) still marks zero-vote Reveal and D-015 as Proposed though D-021 and D-015 are Accepted | BA / UX | No | Update the doc; this spec follows the decisions |
-| 7 | Reveal when only `?` votes exist | BA | No | Allowed (`?` is an accepted vote); Average and Consensus `—` |
+| 7 | Reveal when only `?` votes exist | BA | No | Allowed (`?` is an accepted vote); one `?` group (G-02) |
 | 8 | Host publish failure leaves Guests stale | Developer | No | Accept and report the error; revisit with a resync event post-MVP |
 
 ## Risks
@@ -172,8 +179,8 @@ Commands from [package.json](../../package.json): `npm test` (Vitest), `npm run 
 
 ## Handoff to Test
 - Story: US-003; spec: `docs/specs/US-003-dev-spec.md`; cases needed for AC-003-01..13 (add IDs to the coverage table).
-- Unit: R-01..R-12; reducer transitions and no-ops (revision unchanged); round increase; stale vote after Revote; forged Reveal/Revote intent via fake channel; `voting` payload contains no card value; malformed `results`.
-- E2E flow with separate Host and Guest browser contexts: create -> join -> Host `Reveal estimates` with no votes (error) -> both vote -> Reveal -> assert phase, roster values, Average, Consensus, participation on every client and deep-equal them -> Guest sees `Waiting for Host to start a revote.` -> Host `Revote` -> roster `Not voted`, no results panel, cards enabled -> vote again. Add a third context for AC-003-08 and a closing Guest for AC-003-09 as lower priority.
+- Unit: G-01..G-12 (TC-003-13..24); reducer transitions and no-ops (revision unchanged); round increase; stale vote after Revote; forged Reveal/Revote intent via fake channel; `voting` payload contains no card value; malformed `results`.
+- E2E flow with separate Host and Guest browser contexts: create -> join -> Host `Reveal estimates` with no votes (error) -> both vote -> Reveal -> assert phase, roster values, `results-group` rows with count texts and bars, participation on every client and deep-equal them -> Guest sees `Waiting for Host to start a revote.` -> Host `Revote` -> roster `Not voted`, no results panel, cards enabled -> vote again. Add a third context for AC-003-08 and a closing Guest for AC-003-09 as lower priority.
 - Cannot be tested through the UI: roundId value, wrong-phase intents, stale vote intents, Guest-sent Reveal/Revote intents, network-level privacy (UX-08, separate boundary test), sender authentication, publish failure divergence. AC-003-13 depends on a controllable offline state.
-- Independent risk pass: focus after Reveal/Revote, 20 Participants layout, `0` vs `No vote` vs `?` display, midpoint rounding.
+- Independent risk pass: focus after Reveal/Revote, 20 Participants layout, `0` vs `No vote` vs `?` display, bar width with a large count spread.
 - Existing US-001 and US-002 tests must keep passing.
