@@ -27,8 +27,7 @@ export class RoomPage {
   readonly phaseWaiting: Locator
   readonly phaseHeading: Locator
   readonly resultsPanel: Locator
-  readonly average: Locator
-  readonly consensus: Locator
+  readonly resultGroups: Locator
   readonly participation: Locator
   readonly cardButtons: Locator
   readonly cardGroup: Locator
@@ -50,8 +49,7 @@ export class RoomPage {
     this.phaseWaiting = page.getByTestId('phase-waiting')
     this.phaseHeading = page.getByTestId('phase-heading')
     this.resultsPanel = page.getByTestId('results-panel')
-    this.average = page.getByTestId('results-average')
-    this.consensus = page.getByTestId('results-consensus')
+    this.resultGroups = page.getByTestId('results-group')
     this.participation = page.getByTestId('results-participation')
     this.cardButtons = page.getByTestId('vote-cards').getByRole('button')
     this.cardGroup = page.getByRole('group', { name: 'Voting cards' })
@@ -123,10 +121,15 @@ export class RoomPage {
     }
   }
 
-  async expectResults(average: string, consensus: string) {
+  /** D-024: one entry per cast card value, numeric ascending with `?` last, e.g. `['5', '1 vote']`. */
+  async expectResultGroups(expected: [CardValue, string][]) {
     await expect(this.resultsPanel).toBeVisible()
-    await expect(this.average).toHaveText(average)
-    await expect(this.consensus).toHaveText(consensus)
+    await expect(this.resultGroups).toHaveCount(expected.length)
+    for (const [index, [card, count]] of expected.entries()) {
+      const group = this.resultGroups.nth(index)
+      await expect(group).toContainText(card)
+      await expect(group.getByTestId('results-group-count')).toHaveText(count)
+    }
   }
 
   /** Roster cell text per name; order is not asserted. */

@@ -97,7 +97,7 @@ test.describe('US-003 reveal and results', () => {
     const guestCells = await guest.room.expectVoteCells(expected)
     expect(guestCells).toEqual(hostCells)
     for (const p of [host, guest]) {
-      await p.room.expectResults('6.5', 'No')
+      await p.room.expectResultGroups([['5', '1 vote'], ['8', '1 vote']])
       await expect(p.room.participation).toHaveText('2 of 2 voted')
     }
   })
@@ -146,16 +146,16 @@ test.describe('US-003 reveal and results', () => {
     expect(new Set(Object.values(hostCells)).size).toBe(3)
   })
 
-  test('TC-003-25 Different numeric votes give the same Average and Consensus', async ({ newPlayer }) => {
+  test('TC-003-25 Different numeric votes are grouped separately in ascending order', async ({ newPlayer }) => {
     const { host, guest } = await roomWithGuest(newPlayer)
-    await cast(host, '5')
-    await cast(guest, '8')
+    await cast(host, '8')
+    await cast(guest, '5')
 
     await host.room.reveal()
     await expectRevealed(host, guest)
 
-    await host.room.expectResults('6.5', 'No')
-    await guest.room.expectResults('6.5', 'No')
+    await host.room.expectResultGroups([['5', '1 vote'], ['8', '1 vote']])
+    await guest.room.expectResultGroups([['5', '1 vote'], ['8', '1 vote']])
   })
 
   test('TC-003-26 Zero votes are numeric', async ({ newPlayer }) => {
@@ -167,14 +167,14 @@ test.describe('US-003 reveal and results', () => {
     await expectRevealed(host, guest)
 
     for (const p of [host, guest]) {
-      await p.room.expectResults('0', 'Yes')
+      await p.room.expectResultGroups([['0', '2 votes']])
       await p.room.expectVoteCells({ Maya: '0', Noah: '0' })
       await expect(p.room.voteCell('Maya')).not.toHaveText(NO_VOTE)
       await expect(p.room.voteCell('Noah')).not.toHaveText(NO_VOTE)
     }
   })
 
-  test('TC-003-27 All ? shows dashes', async ({ newPlayer }) => {
+  test('TC-003-27 All ? is grouped as its own value', async ({ newPlayer }) => {
     const { host, guest } = await roomWithGuest(newPlayer)
     await cast(host, '?')
     await cast(guest, '?')
@@ -183,7 +183,7 @@ test.describe('US-003 reveal and results', () => {
     await expectRevealed(host, guest)
 
     for (const p of [host, guest]) {
-      await p.room.expectResults('—', '—')
+      await p.room.expectResultGroups([['?', '2 votes']])
       await p.room.expectVoteCells({ Maya: '?', Noah: '?' })
     }
   })
@@ -245,7 +245,7 @@ test.describe('US-003 revote', () => {
     await expectRevealed(host, guest)
 
     for (const p of [host, guest]) {
-      await p.room.expectResults('3', 'Yes')
+      await p.room.expectResultGroups([['3', '2 votes']])
       await p.room.expectVoteCells({ Maya: '3', Noah: '3' })
     }
   })

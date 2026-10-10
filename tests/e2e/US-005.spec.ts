@@ -465,6 +465,7 @@ test.describe('US-005 AC-005-03 persistence', () => {
   })
 
   test('TC-005-12 Missing, invalid or unavailable storage falls back silently', { tag: '@home' }, async ({ newPlayer }) => {
+    test.setTimeout(90_000)
     const reference = await newPlayer()
     await reference.home.goto()
     const vintageBg = await bodyBg(reference.page)

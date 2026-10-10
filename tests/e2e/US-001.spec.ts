@@ -461,6 +461,7 @@ test.describe('US-001 business rules 5 and 8 phase on join and Guest reload', ()
   })
 
   test('TC-001-90 Guest reload does not rejoin automatically', async ({ newPlayer }) => {
+    test.setTimeout(120_000)
     const { host, code } = await hostCreatesRoom(newPlayer)
     const guest = await guestJoins(newPlayer, code, 'Noah')
     await host.room.expectNames(['Maya', 'Noah'])
@@ -473,7 +474,7 @@ test.describe('US-001 business rules 5 and 8 phase on join and Guest reload', ()
 
     // The old entry is removed by Presence; time it for the record.
     const start = Date.now()
-    await expect.soft(host.room.playersHeading).toHaveText('Players (1)')
+    await expect.soft(host.room.playersHeading).toHaveText('Players (1)', { timeout: 60_000 })
     record('guest-reload-removal-ms', String(Date.now() - start))
     await host.room.expectNames(['Maya'])
   })

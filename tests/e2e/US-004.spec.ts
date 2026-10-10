@@ -441,20 +441,22 @@ test.describe('US-004 AC-004-03 one theme', () => {
     const homeBg = await bodyBg(home.page)
 
     const { host, guest } = await room(newPlayer)
-    const states: [string, Page][] = [['Home', home.page], ['Room voting', host.page]]
+    const states: [string, { fg: Rgba; bg: Rgba }][] = [
+      ['Home', await textColors(home.page.locator('body'))],
+      ['Room voting', await textColors(host.page.locator('body'))],
+    ]
     await cast(host, 'Maya', '5')
     await host.room.reveal()
     await host.room.expectPhase('revealed')
-    states.push(['Room revealed', host.page])
+    states.push(['Room revealed', await textColors(host.page.locator('body'))])
     await host.page.close()
     await guest.room.expectHostLeft()
-    states.push(['Host-left', guest.page])
+    states.push(['Host-left', await textColors(guest.page.locator('body'))])
 
-    for (const [name, page] of states) {
-      const { fg, bg } = await textColors(page.locator('body'))
+    for (const [name, { fg, bg }] of states) {
       expect.soft(isPaperTone(bg), `${name} background ${rgbText(bg)}`).toBe(true)
       expect.soft(isInkBrown(fg), `${name} text ${rgbText(fg)}`).toBe(true)
-      if (name !== 'Room revealed') expect.soft(rgbText(bg), `${name} equals Home`).toBe(homeBg)
+      expect.soft(rgbText(bg), `${name} equals Home`).toBe(homeBg)
     }
   })
 
@@ -707,19 +709,13 @@ test.describe('US-004 AC-004-05 layout', () => {
     await expect(second.room.voteCell(LONG_NAMES[0])).toHaveText('Voted')
 
     const home = await newPlayer()
-    for (const viewport of VIEWPORTS) {
-      await host.page.setViewportSize({ width: viewport.width, height: viewport.height })
-      await home.page.setViewportSize({ width: viewport.width, height: viewport.height })
-      await home.home.goto()
-      await home.home.createButton.click()
-      await expect(home.page.getByRole('alert')).toBeVisible()
-      expect.soft(await overflow(home.page), `${viewport.name}: Home overflow`).toBeLessThanOrEqual(0)
-
-      for (const phase of ['voting', 'revealed'] as const) {
-        if (phase === 'revealed' && (await host.room.phase.innerText()) !== 'revealed') {
-          await host.room.reveal()
-          await host.room.expectPhase('revealed')
-        }
+    for (const phase of ['voting', 'revealed'] as const) {
+      if (phase === 'revealed') {
+        await host.room.reveal()
+        await host.room.expectPhase('revealed')
+      }
+      for (const viewport of VIEWPORTS) {
+        await host.page.setViewportSize({ width: viewport.width, height: viewport.height })
         const action = phase === 'voting' ? host.room.revealButton : host.room.revoteButton
         await action.scrollIntoViewIfNeeded()
         const actionBox = await box(action)
@@ -736,6 +732,13 @@ test.describe('US-004 AC-004-05 layout', () => {
           }
         }
       }
+    }
+    for (const viewport of VIEWPORTS) {
+      await home.page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await home.home.goto()
+      await home.home.createButton.click()
+      await expect(home.page.getByRole('alert')).toBeVisible()
+      expect.soft(await overflow(home.page), `${viewport.name}: Home overflow`).toBeLessThanOrEqual(0)
     }
     await host.page.close()
     await second.room.expectHostLeft()
