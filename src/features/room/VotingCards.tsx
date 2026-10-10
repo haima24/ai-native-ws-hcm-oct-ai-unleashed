@@ -5,7 +5,7 @@ import type { Card, Phase } from '../../types/room'
 export const VOTE_PENDING_MESSAGE = 'Sending vote…'
 export const VOTE_FAILED_MESSAGE = 'Vote was not confirmed. Try again.'
 
-const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005FCC]'
+const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 export default function VotingCards({
   state,
@@ -36,27 +36,27 @@ export default function VotingCards({
             aria-pressed={state.confirmed === card}
             data-selection={selection(card)}
             onClick={() => onVote(card)}
-            className={`min-h-[88px] rounded border-2 border-transparent bg-[#F1F3F4] text-[32px] font-semibold text-[#263238] sm:min-h-24 lg:min-h-28 aria-pressed:bg-[#455A64] aria-pressed:text-white data-[selection=failed]:border-[#B3261E] data-[selection=pending]:border-dashed data-[selection=pending]:border-[#455A64] disabled:cursor-not-allowed disabled:opacity-60 ${focusRing}`}
+            className={`min-h-[88px] rounded border-2 border-rule bg-panel font-display text-[32px] font-semibold text-ink sm:min-h-24 lg:min-h-28 aria-pressed:bg-accent aria-pressed:text-paper aria-pressed:ring-2 aria-pressed:ring-inset aria-pressed:ring-paper data-[selection=failed]:border-danger data-[selection=pending]:border-dashed data-[selection=pending]:border-accent disabled:cursor-not-allowed disabled:opacity-60 ${focusRing}`}
           >
             {card}
           </button>
         ))}
       </div>
       {state.status === 'pending' && (
-        <p role="status" data-testid="vote-status" className="mt-3 text-[#546E7A]">
+        <p role="status" data-testid="vote-status" className="mt-3 text-ink-muted">
           {VOTE_PENDING_MESSAGE}
         </p>
       )}
       {state.status === 'failed' && (
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <p role="alert" data-testid="vote-error" className="text-[#B3261E]">
+          <p role="alert" data-testid="vote-error" className="text-danger">
             {VOTE_FAILED_MESSAGE}
           </p>
           <button
             type="button"
             disabled={phase !== 'voting'}
             onClick={() => onVote(state.card)}
-            className={`min-h-11 rounded bg-[#455A64] px-4 py-2 text-white disabled:opacity-60 ${focusRing}`}
+            className={`min-h-11 rounded bg-accent px-4 py-2 text-paper disabled:opacity-60 ${focusRing}`}
           >
             Retry
           </button>

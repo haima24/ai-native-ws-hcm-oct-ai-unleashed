@@ -1,1 +1,88 @@
 @import "tailwindcss";
+
+@theme {
+  --color-paper: #f3e9d2;
+  --color-panel: #eadcbc;
+  --color-ink: #3e2c23;
+  --color-ink-muted: #6b5646;
+  --color-accent: #7a2e1d;
+  --color-danger: #9b1c1c;
+  --color-focus: #1f4e79;
+  --color-rule: #8a6f4d;
+  --font-display: Georgia, "Times New Roman", serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    background-image:
+      radial-gradient(color-mix(in srgb, var(--color-ink) 4%, transparent) 1px, transparent 1px),
+      radial-gradient(color-mix(in srgb, var(--color-ink) 4%, transparent) 1px, transparent 1px);
+    background-position: 0 0, 7px 5px;
+    background-size: 13px 13px, 17px 17px;
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  /* Decoration only: no content, never intercepts input. Inset frame plus four corner dots. */
+  .ornate {
+    position: relative;
+  }
+
+  .ornate::before,
+  .ornate::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .ornate::before {
+    inset: 3px;
+    border: 1px solid color-mix(in srgb, var(--color-rule) 55%, transparent);
+    border-radius: 2px;
+  }
+
+  .ornate::after {
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 3px 3px, var(--color-rule) 2px, transparent 2.5px),
+      radial-gradient(circle at calc(100% - 3px) 3px, var(--color-rule) 2px, transparent 2.5px),
+      radial-gradient(circle at 3px calc(100% - 3px), var(--color-rule) 2px, transparent 2.5px),
+      radial-gradient(circle at calc(100% - 3px) calc(100% - 3px), var(--color-rule) 2px, transparent 2.5px);
+  }
+
+  .ornament-divider {
+    position: relative;
+    height: 12px;
+    pointer-events: none;
+  }
+
+  .ornament-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    border-top: 3px double var(--color-rule);
+    transform: translateY(-50%);
+  }
+
+  .ornament-divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-paper);
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+}
