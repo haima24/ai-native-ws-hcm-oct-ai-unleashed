@@ -19,6 +19,7 @@ Distinguish planning from implementation in the request. Read relevant decisions
 - Planning: use [delivery spec](../skills/delivery-spec/SKILL.md); save the spec without production code, then hand off to Test.
 - Implementation: verify the story gate (requirements, spec, test cases exist), then make a focused change. Apply [React](../instructions/react.instructions.md) and [realtime](../instructions/realtime.instructions.md) rules.
 - Write meaningful Vitest unit/regression tests for domain logic. Test owns case design and independent verification.
+- Read `docs/design/ui-ux.md` before UI changes. Output paths follow `docs/artifact-map.md`.
 - Bug fixes and small refactors follow the light workflow in the global instructions.
 - Run the build and unit scripts from `package.json`; inspect counts and failures. Build/unit pass alone does not mean DONE.
 - Self-review: correctness, Host-only enforcement, input validation, effect cleanup, failure handling.

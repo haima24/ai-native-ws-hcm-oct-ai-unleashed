@@ -43,6 +43,4 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
 - Testing: Vitest for domain logic; Playwright e2e with separate Host and Guest contexts, authored and run through Playwright MCP, also runnable against the deployed Vercel URL. Rationale: fast logic checks plus real multi-user verification.
 
 ## Open decisions
-- Hidden-vote privacy: any subscriber of a shared Supabase topic can read broadcasts. Accept a friendly-team threat model, or use private channels? Do not claim cryptographic privacy.
-- Room code: 4 or 6 characters, case-insensitive?
-- Consensus: all numeric votes equal, or within one adjacent card?
+None open. See [decisions](knowledge/decisions.md): D-005, D-016, D-019.
