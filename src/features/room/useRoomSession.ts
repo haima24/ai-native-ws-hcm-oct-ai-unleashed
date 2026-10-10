@@ -50,7 +50,7 @@ export function useRoomSession(session: RoomSession): UseRoomSession {
   const vote = useCallback(
     (card: Card) => {
       const requestId = session.vote(card)
-      dispatchVote({ type: 'select', card, requestId })
+      dispatchVote({ type: session.role === 'host' ? 'select-confirmed' : 'select', card, requestId })
     },
     [session],
   )

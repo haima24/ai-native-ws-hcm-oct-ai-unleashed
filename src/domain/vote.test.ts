@@ -61,6 +61,16 @@ describe('US-002 domain: voteReducer', () => {
     expect(voteReducer(retrying, { type: 'failed', requestId: 'r1' })).toBe(retrying)
   })
 
+  it('TC-002-04 select-confirmed goes idle to confirmed in one step and never passes through pending', () => {
+    const confirmed = voteReducer(IDLE, { type: 'select-confirmed', card: '5', requestId: 'r1' })
+    expect(confirmed).toEqual({ status: 'confirmed', card: '5', confirmed: '5' })
+    const replaced = voteReducer(confirmed, { type: 'select-confirmed', card: '8', requestId: 'r2' })
+    expect(replaced).toEqual({ status: 'confirmed', card: '8', confirmed: '8' })
+    // The Host's deferred vote-result for the same request is a no-op.
+    expect(voteReducer(replaced, { type: 'confirmed', requestId: 'r2' })).toBe(replaced)
+    expect(voteReducer(replaced, { type: 'failed', requestId: 'r2' })).toBe(replaced)
+  })
+
   it('US-002 round-changed returns to idle from any state', () => {
     const confirmed = run(IDLE, { type: 'select', card: '5', requestId: 'r1' }, { type: 'confirmed', requestId: 'r1' })
     expect(voteReducer(confirmed, { type: 'round-changed' })).toEqual(IDLE)

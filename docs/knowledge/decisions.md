@@ -28,5 +28,6 @@ These choices reuse the product direction in [product brief](../product-brief.md
 | D-021 | Accepted | Reveal requires at least one accepted vote; message `At least one vote is required to reveal` | Prevents revealing an empty round |
 | D-022 | Accepted | Results show `<voted> of <participants> voted` using the current roster as denominator; an accepted `?` counts as voted | Makes participation clear without treating abstention as no vote |
 | D-023 | Accepted | The result population is the current roster: a Participant who leaves is removed from Results and their vote is excluded; a Guest joining in `revealed` appears as `No vote` and changes only the participation denominator | Keeps displayed results aligned with current room membership |
+| D-024 | Accepted | Guest sends best-effort `room:guest-left` on `pagehide`; Presence leave remains the fallback; unauthenticated like all Broadcast per D-005 | e2e showed reload leave latency with Presence only |
 
 No completed spike, deployment or test execution is implied by this table. Domain terms: [glossary](glossary.md). Screens: [UI/UX](../design/ui-ux.md).

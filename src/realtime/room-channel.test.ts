@@ -234,6 +234,118 @@ describe('US-001 realtime: room channel', () => {
   })
 })
 
+class FakePageHide {
+  listeners = new Set<() => void>()
+  addEventListener(_type: 'pagehide', cb: () => void) {
+    this.listeners.add(cb)
+  }
+  removeEventListener(_type: 'pagehide', cb: () => void) {
+    this.listeners.delete(cb)
+  }
+  fire() {
+    this.listeners.forEach((cb) => cb())
+  }
+}
+
+async function startHostWithPageHide() {
+  const env = setup()
+  const pageHide = new FakePageHide()
+  const pending = createRoom(
+    { displayName: 'Maya' },
+    { client: env.client, createId: env.createId, random: () => 0, pageHideTarget: pageHide },
+  )
+  const channel = env.channels[0]
+  channel.status('SUBSCRIBED')
+  const result = await pending
+  if (result.status !== 'joined') throw new Error('host did not join')
+  channel.receive('room:join-intent', { requestId: 'j1', participantId: 'g1', displayName: 'Noah' })
+  await flush()
+  channel.sent.length = 0
+  return { channel, session: result.session }
+}
+
+describe('US-001 realtime: Guest room:guest-left', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('TC-001-72 Host removes an accepted Guest on room:guest-left and publishes once', async () => {
+    const { channel, session } = await startHostWithPageHide()
+    channel.receive('room:guest-left', { roomCode: session.roomCode, participantId: 'g1' })
+    await flush()
+    expect(session.getView().participants.map((p) => p.displayName)).toEqual(['Maya'])
+    expect(session.getView().revision).toBe(2)
+    expect(views(channel)).toHaveLength(1)
+    expect(views(channel)[0].revision).toBe(2)
+  })
+
+  it('TC-001-72 unknown, Host and malformed room:guest-left are ignored', async () => {
+    const { channel, session } = await startHostWithPageHide()
+    channel.receive('room:guest-left', { roomCode: session.roomCode, participantId: 'zzz' })
+    channel.receive('room:guest-left', { roomCode: session.roomCode, participantId: session.participantId })
+    channel.receive('room:guest-left', { roomCode: session.roomCode })
+    channel.receive('room:guest-left', { roomCode: 'OTHER1', participantId: 'g1' })
+    channel.receive('room:guest-left', null)
+    await flush()
+    expect(session.getView().participants.map((p) => p.displayName)).toEqual(['Maya', 'Noah'])
+    expect(session.getView().revision).toBe(1)
+    expect(channel.sent).toEqual([])
+  })
+
+  it('TC-001-72 a later duplicate Leave (Presence or Broadcast) is a no-op', async () => {
+    const { channel, session } = await startHostWithPageHide()
+    channel.receive('room:guest-left', { roomCode: session.roomCode, participantId: 'g1' })
+    channel.presence('leave', 'g1')
+    channel.receive('room:guest-left', { roomCode: session.roomCode, participantId: 'g1' })
+    await flush()
+    expect(session.getView().revision).toBe(2)
+    expect(views(channel)).toHaveLength(1)
+  })
+
+  it('TC-001-72 an accepted Guest sends room:guest-left on pagehide with ids only; no listener after close()', async () => {
+    const env = setup()
+    const pageHide = new FakePageHide()
+    const pending = joinRoom(
+      { roomCode: 'ABC234', displayName: 'Noah' },
+      { client: env.client, createId: env.createId, pageHideTarget: pageHide },
+    )
+    const channel = env.channels[0]
+    channel.status('SUBSCRIBED')
+    await flush()
+    // Not accepted yet: no listener.
+    expect(pageHide.listeners.size).toBe(0)
+    const intent = channel.sentOf('room:join-intent')[0].payload as { requestId: string; participantId: string }
+    channel.receive('room:join-accepted', { requestId: intent.requestId, participantId: intent.participantId, roomCode: 'ABC234', revision: 1 })
+    channel.receive('room:public-view', {
+      roomCode: 'ABC234',
+      revision: 1,
+      roundId: 1,
+      phase: 'voting',
+      ended: false,
+      participants: [
+        { participantId: 'h1', displayName: 'Maya', role: 'host', hasVoted: false },
+        { participantId: intent.participantId, displayName: 'Noah', role: 'guest', hasVoted: false },
+      ],
+    })
+    const result = await pending
+    if (result.status !== 'joined') throw new Error('expected joined')
+    expect(pageHide.listeners.size).toBe(1)
+
+    pageHide.fire()
+    expect(channel.sentOf('room:guest-left')).toEqual([
+      { event: 'room:guest-left', payload: { roomCode: 'ABC234', participantId: intent.participantId } },
+    ])
+
+    result.session.close()
+    expect(pageHide.listeners.size).toBe(0)
+    pageHide.fire()
+    expect(channel.sentOf('room:guest-left')).toHaveLength(1)
+  })
+})
+
 function fakeTimers() {
   let now = 0
   let nextId = 0
