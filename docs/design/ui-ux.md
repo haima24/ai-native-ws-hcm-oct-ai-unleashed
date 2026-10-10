@@ -1,5 +1,7 @@
 # UI/UX — Story Pointing
 
+Architecture: see the [solution architecture document](sad.md).
+
 **Status:** implementation target; not a claim of implemented UI or completed usability testing.
 **Owners:** BA defines behavior and copy; Developer maintains this design and the story selector contracts; Test verifies observable states.
 
@@ -57,6 +59,8 @@ Names and values are illustrative. Before reveal, the roster never shows other P
 | Results | Wrapping compact metrics below cards | Wrap | Stack/wrap, no horizontal overflow |
 
 Use normal page scrolling; do not force a 100vh container that clips controls. With 20 participants the main action stays reachable; names wrap rather than overlap status.
+
+Note: the colors below are superseded by US-004/US-005 and D-026/D-027 (vintage default plus five selectable themes).
 
 Visual tokens (US-004, vintage theme; proposed D-024) are defined once in `src/index.css` under `@theme` and used as Tailwind utilities: `paper` `#F3E9D2` (page, inputs), `panel` `#EADCBC` (roster, panels, cards), `ink` `#3E2C23` (text), `ink-muted` `#6B5646`, `accent` `#7A2E1D` (primary actions, selected card), `danger` `#9B1C1C`, `focus` `#1F4E79` (outline), `rule` `#8A6F4D` (borders); headings and card values use a system serif stack. Body text >=16px; card values about 32px; 4px rounding. Contrast of text pairs targets 4.5:1 and is measured in the story review, not assumed.
 

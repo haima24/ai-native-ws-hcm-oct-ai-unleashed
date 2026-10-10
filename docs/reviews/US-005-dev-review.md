@@ -3,12 +3,12 @@
 Date: 2026-10-10. Scope: requirements US-005 (Draft), spec US-005. Commit: not committed (worktree changes only).
 
 ## Gate status
-Implemented on the mob's explicit instruction. Not met: `docs/test-cases/US-005-test-cases.md` is missing, and Q1 (themes/avatars out of scope) and Q3 (per Participant vs room-wide) are not recorded as decisions. Proposed D-025 records the choice.
+Implemented on the mob's explicit instruction. Not met: `docs/test-cases/US-005-test-cases.md` is missing, and Q1 (themes/avatars out of scope) and Q3 (per Participant vs room-wide) are not recorded as decisions. Proposed D-027 records the choice (now Accepted by the mob, 2026-10-10).
 
 ## Files changed
 - New: `src/features/theme/themes.ts`, `themeStore.ts`, `themeStore.test.ts`, `ThemeIcon.tsx`, `ThemePicker.tsx`.
 - Changed: `src/features/room/HomeIllustration.tsx` (six illustrations by theme), `HomePage.tsx`, `RoomShell.tsx`, `ResultsPanel.tsx` (picker, heading icons), `src/index.css` (five theme override blocks, ornament variables), `index.html` (first-paint script), `src/main.tsx` (`initTheme()`).
-- Docs: `docs/design/ui-ux.md`, `docs/knowledge/decisions.md` (D-025 Proposed), this review, spec status.
+- Docs: `docs/design/ui-ux.md`, `docs/knowledge/decisions.md` (D-027, now Accepted), this review, spec status.
 - No change to `src/domain/`, `src/realtime/`, `src/types/`, `tests/` or `package.json`.
 
 ## Contract changes
@@ -44,6 +44,6 @@ Implemented on the mob's explicit instruction. Not met: `docs/test-cases/US-005-
 - `Connection lost` and the header connection indicator still do not exist (US-002 AC-002-06).
 
 ## Next action
-1. Mob: record or reject D-024/D-025 and confirm Q1, Q3.
+1. Mob: D-026 and D-027 are Accepted (2026-10-10); Q1, Q2, Q3 accepted with the recommended defaults.
 2. Test: write `docs/test-cases/US-005-test-cases.md`, then `tests/e2e/US-005.spec.ts`, and verify.
 3. Configure the Supabase env vars and run `npm run test:e2e`; capture per-theme screenshots and rendered contrast.

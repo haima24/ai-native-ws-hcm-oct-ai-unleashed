@@ -21,6 +21,7 @@ Shared vocabulary for stories, specs, tests and code. The last column lists conf
 | Room code | Short code used to join a room; also embedded in the share link. | Room ID, PIN |
 | Round | One voting cycle: `voting`, then `revealed`, until a Revote starts the next. | Turn |
 | Share link | URL containing the room code that lets someone join directly. | Invite link |
+| Theme | A per-device presentation setting (one of six looks) chosen by a Participant; stored locally, never shared with other Participants or sent over realtime. | Skin, room theme |
 | Vote | One Participant's chosen card in the current round. Others see only "Voted" / "Not voted" until reveal. | Selection, answer |
 
 ## UI aliases and precise meanings

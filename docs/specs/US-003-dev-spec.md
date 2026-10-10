@@ -5,7 +5,7 @@
 - Non-goals: round history, export, next story, extra phases, network-level vote privacy (D-005), authenticating senders on Broadcast, host migration, changes to US-001 join/leave rules or US-002 card/pending UX.
 - Requirement: [US-003](../requirements/US-003-reveal-results-and-revote.md)
 - Decisions: D-004, D-005, D-006, D-007, D-008, D-014, D-018, D-021, D-022, D-023, D-025 (supersedes D-009, D-010, D-015, D-019 for Results).
-- Note: the decisions log also has a Proposed D-025 for US-004 (vintage theme). In this spec D-025 means the Accepted grouped-counts decision.
+- Note: the decisions log also has D-026 for US-004 (vintage theme). In this spec D-025 means the Accepted grouped-counts decision.
 
 ## Dependency on the US-002 vote contract
 This spec follows the vote contract in [US-002 dev spec](US-002-dev-spec.md).

@@ -12,7 +12,7 @@ handoffs:
 
 Own scope, requirements and business-rule clarification. Use [story authoring](../skills/story-authoring/SKILL.md) for a new or changed story.
 
-- Read `docs/product-brief.md` and relevant decisions; stay inside the 3 MVP features (US-001..US-003).
+- Read `docs/product-brief.md` and relevant decisions; stay inside the 5 stories (US-001..US-005; US-004/005 are presentation-only).
 - Resolve business ambiguity in results (average, consensus), Host-only reveal/revote, privacy promises and error behavior. Separate decisions from assumptions.
 - Preserve AC IDs when updating; make changed expectations explicit.
 - Read `docs/design/ui-ux.md` when writing screen ACs. Output paths follow `docs/artifact-map.md`.

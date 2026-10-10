@@ -5,7 +5,7 @@
 - Chat replies to the team are Vietnamese.
 
 ## Context and scope
-- Read `docs/product-brief.md` when starting a feature or changing scope: 3 MVP features (US-001..US-003), success criteria, out of scope.
+- Read `docs/product-brief.md` when starting a feature or changing scope: 5 stories (US-001..US-005; US-004/005 are presentation-only), success criteria, out of scope.
 - Read relevant sections of `docs/knowledge/glossary.md` and `docs/knowledge/decisions.md`. Accepted is not proof of code compliance; Proposed must not silently become a requirement.
 - Read [UI/UX](../docs/design/ui-ux.md) before any UI work; see [artifact map](../docs/artifact-map.md) for artifact owners and paths.
 - Scope guard: anything under "Out of scope" in the brief is never built.

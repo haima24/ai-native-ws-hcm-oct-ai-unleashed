@@ -15,7 +15,7 @@ Implementation was started before the gate was met, at the mob's request. This s
 - Goal: a `Theme` picker (Vintage, Light, Dark, Ocean, Sunny, Forest) that switches palette, Home illustration, ornament style and icon at once, remembered on this device, with no effect on room state or other Participants.
 - Non-goals: room-wide or Host-set theme, any realtime message or URL parameter for theme, OS theme detection, custom themes, icon libraries, web fonts, raster or remote images, avatars, new animations, changes to rules, copy (except the picker and status message), roles or transport.
 - Requirement: [US-005](../requirements/US-005-theme-selection.md)
-- Decisions: D-002 (Tailwind kept), D-003, D-004, D-005, D-007, D-011; D-024 (Proposed) is superseded by a new decision for selectable themes (proposed D-025, mob to accept).
+- Decisions: D-002 (Tailwind kept), D-003, D-004, D-005, D-007, D-011; D-026 (Accepted, fixed vintage theme) is superseded in its "fixed" part by D-027 (Accepted, selectable themes).
 
 ## Design summary
 - A theme is a set of CSS custom properties. The default theme (Vintage) stays in `@theme` in `src/index.css`; each other theme overrides the same `--color-*` tokens under `:root[data-theme="<id>"]`. Components keep using token utilities (`bg-paper`, `text-ink`, `bg-accent`, ...), so no component classes change per theme.
@@ -55,7 +55,7 @@ Conflict resolution: US-004 says "one fixed theme, no theme switcher, no dark mo
 | `src/index.css` | Existing | Five theme override blocks, per-theme ornament variables, `color-scheme` |
 | `index.html` | Existing | Inline head script that applies the stored theme before first paint |
 | `docs/design/ui-ux.md` | Existing | Theme list, picker placement, per-theme tokens |
-| `docs/knowledge/decisions.md` | Existing | Add proposed D-025 (selectable themes, local only) |
+| `docs/knowledge/decisions.md` | Existing | Records D-027 (selectable themes, local only) |
 
 No change to `src/domain/`, `src/realtime/`, `src/types/`, `tests/` (Test owns), or `package.json`.
 
@@ -136,14 +136,14 @@ Existing selectors from the US-001..US-004 specs stay unchanged.
 | 5 | `ThemePicker.tsx`; wire into `HomePage.tsx` and `RoomShell.tsx`; heading icons in Home, Players and Results | e2e | `npm run test:e2e` |
 | 6 | Scan `src/` for hex outside `src/index.css`, `slate-`, `bg-white`, `text-white` | static | grep |
 | 7 | Measure contrast per theme and capture screenshots at 1280x720, 768x1024, 390x844 | manual evidence | n/a |
-| 8 | Update UI/UX; add proposed D-025; write `docs/reviews/US-005-dev-review.md` | docs | n/a |
+| 8 | Update UI/UX; record D-027; write `docs/reviews/US-005-dev-review.md` | docs | n/a |
 | 9 | Run `npm run build`, `npm test`, `npm run test:e2e` and report PASS / FAIL / NOT RUN; e2e needs Supabase env vars (no `.env` exists yet) | all | as listed |
 
 ## Open decisions
 - Q1 themes and avatars out of scope, Q3 per Participant vs room-wide: mob, blocking.
 - Q2 Vintage as default, Q4 `localStorage` vs `sessionStorage`, Q7 palettes: non-blocking; the values above are proposals.
 - One icon glyph per theme is reused as the picker icon and the heading marker. If the mob wants a different icon per heading (for example players, results), AC-005-05 needs a richer icon set: Developer proposes, BA confirms, non-blocking.
-- Proposed D-025 to record selectable local themes: mob, blocking for DONE.
+- D-027 records selectable local themes (Accepted by the mob 2026-10-10).
 - Slicing (from the story review): slice 1 picker, persistence, Light and Dark; slice 2 Ocean, Sunny, Forest; slice 3 themed illustrations and icons. Developer recommends implementing in that order.
 
 ## Handoff to Test

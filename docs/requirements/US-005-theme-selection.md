@@ -1,13 +1,13 @@
 # US-005: Theme selection with themed imagery
 
-**Status:** Draft, blocked on mob decision (Q1, Q2, Q3). Not part of the 3 MVP features. Do not start the spec or code until the mob approves the scope change.
+**Status:** Accepted by the mob 2026-10-10; presentation-only.
 
 ## Story
 As a Participant, I want to choose a theme (Light, Dark, Ocean, Sunny, Forest, or the existing Vintage) with matching images and icons, so that the app is comfortable and pleasant for me to use without changing how estimation works for anyone else.
 
 - MVP feature: none. Presentation-only extension of [US-004](US-004-vintage-bootstrap-ui.md) across US-001, US-002 and US-003 screens ([product brief](../product-brief.md)).
 - Brief success criteria: 1-6 must still hold unchanged (regression guard).
-- Decisions: D-002 (Accepted, Tailwind kept), D-003 (Accepted), D-004 (Accepted), D-005 (Accepted), D-007 (Accepted), D-011 (Accepted), D-024 (Proposed, one fixed vintage theme; this story would supersede its "fixed" part). Brief "Out of scope: themes, avatars" is affected (Q1).
+- Decisions: D-002 (Accepted, Tailwind kept), D-003 (Accepted), D-004 (Accepted), D-005 (Accepted), D-007 (Accepted), D-011 (Accepted), D-026 (Accepted, one fixed vintage theme; superseded in its "fixed" part by D-027), D-027 (Accepted, six selectable themes, local only). Brief "Out of scope: themes" is lifted for this story by D-027; avatars stay out of scope (Q1).
 
 ## Scope
 **In scope**
@@ -110,11 +110,11 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 ## Traceability
 | AC | Brief success criterion | Decision ID |
 |---|---|---|
-| AC-005-01 | none (presentation) | D-002, D-024 |
+| AC-005-01 | none (presentation) | D-002, D-026, D-027 |
 | AC-005-02 | 4 | D-003, D-004 |
 | AC-005-03 | 2, 3 | D-005 |
 | AC-005-04 | 2 | D-002, D-011 |
-| AC-005-05 | none (presentation) | D-002, D-024 |
+| AC-005-05 | none (presentation) | D-002, D-026, D-027 |
 | AC-005-06 | 2, 3 | D-005, D-007 |
 | AC-005-07 | 2, 3, 4, 5 | D-005, D-007 |
 | AC-005-08 | 4 | none |
@@ -123,15 +123,15 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 ## Dependencies
 - [US-004](US-004-vintage-bootstrap-ui.md): its Vintage theme, token structure, decoration approach and AC-004-04..08 expectations carry into every theme. When this story is approved, the US-004 lines "no theme switcher", "dark mode" and "one fixed theme" must be updated by BA to point here.
 - US-001..US-003 implemented behavior and selector maps in their dev specs.
-- Mob decision on Q1, Q2, Q3; D-024 to be superseded by a new decision for selectable themes.
+- Mob decisions Q1, Q2, Q3 accepted 2026-10-10; D-027 records selectable themes and supersedes the "fixed" part of D-026.
 - [UI/UX](../design/ui-ux.md) section 3 visual tokens to be restructured per theme after approval.
 
 ## Open questions and assumptions
 | # | Question or assumption | Type | Status |
 |---|---|---|---|
-| Q1 | The brief lists "themes" and "avatars" as out of scope and US-004 says one fixed theme. Does the mob accept selectable themes with themed imagery as a scope change? Recommend yes, limited to the six named themes and decoration only. | question | Open, blocks start |
-| Q2 | Keep Vintage as the default sixth theme, or replace it with Light as the default? Assumed: keep Vintage as the default and add the five requested; "more template" suggests adding. | question | Open |
-| Q3 | Is the choice per Participant on their own device, or should the Host set one theme for the whole room? Recommend per Participant: a room-wide theme needs a new Host intent and a protocol change, which is a separate story. | question | Open, blocks start |
+| Q1 | The brief lists "themes" and "avatars" as out of scope and US-004 says one fixed theme. Does the mob accept selectable themes with themed imagery as a scope change? Recommend yes, limited to the six named themes and decoration only. | question | Accepted by the mob 2026-10-10 (recommended default) |
+| Q2 | Keep Vintage as the default sixth theme, or replace it with Light as the default? Assumed: keep Vintage as the default and add the five requested; "more template" suggests adding. | question | Accepted by the mob 2026-10-10 (recommended default) |
+| Q3 | Is the choice per Participant on their own device, or should the Host set one theme for the whole room? Recommend per Participant: a room-wide theme needs a new Host intent and a protocol change, which is a separate story. | question | Accepted by the mob 2026-10-10 (recommended default: per Participant) |
 | Q4 | Storage of the choice: assumed browser `localStorage` (persists across sessions, not sensitive, never sent anywhere). The display name uses `sessionStorage`; use that instead if the mob wants the theme to reset per tab. | reversible assumption | Open |
 | Q5 | Spelling: the request says "Forrest"; assumed `Forest`. | reversible assumption | Open |
 | Q6 | Images and icons are authored in the repo as inline SVG or CSS, one illustration and one small icon set per theme; no stock art, no icon library (so no license issue). If the mob wants specific artwork, it must supply it with its licence. | reversible assumption | Open |
