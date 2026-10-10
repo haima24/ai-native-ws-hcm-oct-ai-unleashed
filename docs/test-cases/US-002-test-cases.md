@@ -79,5 +79,5 @@ Conventions
 
 ## Deferred (no cases in this pass)
 
-- AC-002-05 Voting unavailable outside voting phase: reducer-level `Vote` in `revealed` is covered by US-003 TC-003-34/35; e2e waits for US-003 Reveal.
+- AC-002-05 Voting unavailable outside voting phase: reducer-level `Vote` in `revealed` (`not-voting`) and disabled cards are planned unit cases; e2e waits for US-003 Reveal.
 - AC-002-06 Voting unavailable while disconnected: lower priority; depends on the Supabase status spike (spec task 7).

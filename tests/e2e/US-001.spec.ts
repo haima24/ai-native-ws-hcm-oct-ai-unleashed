@@ -43,12 +43,6 @@ async function guestJoins(newPlayer: NewPlayer, code: string, name: string) {
 
 const record = (type: string, description: string) => test.info().annotations.push({ type, description })
 
-async function timed(action: () => Promise<unknown>): Promise<number> {
-  const start = Date.now()
-  await action()
-  return Date.now() - start
-}
-
 test.describe('US-001 happy path', () => {
   test('TC-001-01 Host creates a room', async ({ newPlayer }) => {
     const host = await newPlayer()

@@ -1,15 +1,45 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { RoomSession } from '../../realtime/room-channel'
+import ResultsPanel from './ResultsPanel'
 import { useRoomSession } from './useRoomSession'
+import VotingCards from './VotingCards'
 
 const HOST_LEFT_MESSAGE = 'The Host closed the room. Return to Home to start or join another room.'
+export const REVEAL_ERROR_MESSAGE = 'At least one vote is required to reveal'
+const WAIT_FOR_REVEAL = 'Waiting for Host to reveal.'
+const WAIT_FOR_REVOTE = 'Waiting for Host to start a revote.'
+
+const primaryButton =
+  'min-h-11 rounded bg-[#455A64] px-4 py-2 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005FCC]'
 
 type CopyState = 'idle' | 'copied' | 'failed'
 
 export default function RoomShell({ session, onReturnHome }: { session: RoomSession; onReturnHome: () => void }) {
-  const { view, hostLeft, error } = useRoomSession(session)
+  const { view, hostLeft, error, voteState, vote, reveal, revote } = useRoomSession(session)
   const [copy, setCopy] = useState<CopyState>('idle')
+  // Revision at which Reveal was refused; the error disappears once the view moves on.
+  const [revealErrorRevision, setRevealErrorRevision] = useState<number | null>(null)
+  const phaseHeadingRef = useRef<HTMLHeadingElement>(null)
   const link = `${location.origin}${location.pathname}?room=${view.roomCode}`
+  const revealed = view.phase === 'revealed'
+  const showRevealError = revealErrorRevision === view.revision && !revealed
+  const valueById = new Map(view.results?.entries.map((e) => [e.participantId, e.value] as const))
+  const voteText = (id: string, hasVoted: boolean) =>
+    revealed ? (valueById.get(id) ?? 'No vote') : hasVoted ? 'Voted' : 'Not voted'
+
+  const onReveal = () => {
+    const outcome = reveal?.()
+    if (outcome === 'accepted') {
+      setRevealErrorRevision(null)
+      phaseHeadingRef.current?.focus()
+    } else if (outcome === 'no-votes') {
+      setRevealErrorRevision(session.getView().revision)
+    }
+  }
+
+  const onRevote = () => {
+    if (revote?.() === 'accepted') phaseHeadingRef.current?.focus()
+  }
 
   const copyLink = async () => {
     try {
@@ -85,15 +115,52 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
                 {p.displayName}
                 {p.role === 'host' && <span className="text-[#546E7A]"> · Host</span>}
                 {p.participantId === session.participantId && <span className="text-[#546E7A]"> · You</span>}
-                {!p.hasVoted && <span className="text-[#546E7A]"> · Not voted</span>}
+                <span className="text-[#546E7A]">
+                  {' · '}
+                  <span data-testid="player-vote">{voteText(p.participantId, p.hasVoted)}</span>
+                </span>
               </li>
             ))}
           </ul>
         </section>
         <section aria-label="Round">
-          <h2 className="text-lg font-semibold">
+          <h2
+            ref={phaseHeadingRef}
+            tabIndex={-1}
+            data-testid="phase-heading"
+            className="w-fit text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005FCC]"
+          >
             Phase: <span data-testid="room-phase">{view.phase}</span>
           </h2>
+          <VotingCards state={voteState} phase={view.phase} onVote={vote} />
+          {session.role === 'host' ? (
+            <div className="mt-4">
+              {revealed ? (
+                <button type="button" onClick={onRevote} className={primaryButton}>
+                  Revote
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onReveal}
+                  aria-describedby={showRevealError ? 'reveal-error' : undefined}
+                  className={primaryButton}
+                >
+                  Reveal estimates
+                </button>
+              )}
+              {showRevealError && (
+                <p id="reveal-error" role="alert" data-testid="reveal-error" className="mt-2 text-[#B3261E]">
+                  {REVEAL_ERROR_MESSAGE}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p data-testid="phase-waiting" className="mt-4 text-[#546E7A]">
+              {revealed ? WAIT_FOR_REVOTE : WAIT_FOR_REVEAL}
+            </p>
+          )}
+          {revealed && view.results && <ResultsPanel results={view.results} />}
         </section>
       </div>
     </main>

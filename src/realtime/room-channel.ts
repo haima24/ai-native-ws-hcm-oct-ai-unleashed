@@ -2,14 +2,17 @@ import {
   applyPublicView,
   createRoom as createRoomState,
   generateRoomCode,
+  isPublicViewChange,
   isWellFormedRoomCode,
   normalizeRoomCode,
   roomReducer,
 } from '../domain/room'
-import type { PublicView, Role, RoomAction, RoomState } from '../types/room'
+import { computeResults } from '../domain/results'
+import type { Card, PublicView, Role, RoomAction, RoomOutcome, RoomState } from '../types/room'
 
 export const CREATE_DEADLINE_MS = 10_000
 export const JOIN_DEADLINE_MS = 5_000
+export const VOTE_CONFIRM_MS = 5_000
 
 export const channelName = (roomCode: string) => `story-pointing:${roomCode}`
 
@@ -55,12 +58,18 @@ export type SessionEvent =
   | { type: 'view'; view: PublicView }
   | { type: 'host-left' }
   | { type: 'error'; message: string }
+  | { type: 'vote-result'; requestId: string; result: 'confirmed' | 'failed' }
 
 export interface RoomSession {
   readonly role: Role
   readonly participantId: string
   readonly roomCode: string
   getView(): PublicView
+  // Returns the requestId; the matching `vote-result` event follows.
+  vote(card: Card): string
+  // Host sessions only; a Guest session has neither method (D-007).
+  reveal?(): RoomOutcome
+  revote?(): RoomOutcome
   subscribe(listener: (event: SessionEvent) => void): () => void
   close(): void
 }
@@ -93,6 +102,8 @@ export function toPublicView(state: RoomState): PublicView {
     phase: state.phase,
     participants: state.participants,
     ended: state.status === 'ended',
+    // Vote values leave the Host tab only here, and only once revealed (D-005).
+    results: state.phase === 'revealed' ? computeResults(state.votes, state.participants) : null,
   }
 }
 
@@ -153,7 +164,20 @@ export function createRoom(input: { displayName: string }, deps: RoomChannelDeps
   const dispatch = (action: RoomAction) => {
     const result = roomReducer(state, action)
     if (result.outcome === 'accepted') state = result.state
-    return result.outcome
+    return result
+  }
+
+  const applyVote = (participantId: string, roundId: number, card: string) => {
+    const prev = state
+    const result = dispatch({ type: 'Vote', participantId, roundId, card })
+    if (result.outcome === 'accepted' && isPublicViewChange(prev, state)) publish()
+    return result
+  }
+
+  const applyPhaseAction = (action: RoomAction & { type: 'Reveal' | 'Revote' }): RoomOutcome => {
+    const { outcome } = dispatch(action)
+    if (outcome === 'accepted') publish()
+    return outcome
   }
 
   const onPageHide = () => {
@@ -177,6 +201,18 @@ export function createRoom(input: { displayName: string }, deps: RoomChannelDeps
     participantId: hostId,
     roomCode,
     getView: () => toPublicView(state),
+    vote: (card) => {
+      const requestId = createId()
+      const { outcome } = applyVote(hostId, state.roundId, card)
+      // Deferred so the caller registers requestId before the result arrives.
+      void Promise.resolve().then(() => {
+        if (!closed) emitter.emit({ type: 'vote-result', requestId, result: outcome === 'accepted' ? 'confirmed' : 'failed' })
+      })
+      return requestId
+    },
+    // Host-local phase actions; no Broadcast intent exists for them, so a Guest cannot trigger either.
+    reveal: () => applyPhaseAction({ type: 'Reveal' }),
+    revote: () => applyPhaseAction({ type: 'Revote' }),
     subscribe: emitter.subscribe,
     close,
   }
@@ -185,7 +221,7 @@ export function createRoom(input: { displayName: string }, deps: RoomChannelDeps
     if (closed || !isRecord(payload)) return
     const { requestId, participantId, displayName } = payload
     if (!isString(requestId) || !isString(participantId) || !isString(displayName)) return
-    const outcome = dispatch({ type: 'Join', participantId, displayName })
+    const outcome = dispatch({ type: 'Join', participantId, displayName }).outcome
     if (outcome === 'accepted') {
       void sendChecked(
         channel,
@@ -198,10 +234,22 @@ export function createRoom(input: { displayName: string }, deps: RoomChannelDeps
     }
   })
 
+  channel.on('broadcast', { event: 'room:vote-intent' }, ({ payload }) => {
+    if (closed || !isRecord(payload)) return
+    const { requestId, participantId, roundId, card } = payload
+    if (!isString(requestId) || !isString(participantId) || typeof roundId !== 'number' || !isString(card)) return
+    const result = applyVote(participantId, roundId, card)
+    if (result.outcome === 'accepted') {
+      void sendChecked(channel, 'room:vote-accepted', { requestId, participantId, roundId }, reportError)
+    } else if (result.reason && result.reason !== 'unknown-participant') {
+      void sendChecked(channel, 'room:vote-rejected', { requestId, participantId, reason: result.reason }, reportError)
+    }
+  })
+
   // Presence join/sync never change the roster; only a leave of an accepted Guest does.
   channel.on('presence', { event: 'leave' }, ({ key }) => {
     if (closed || !key || key === hostId) return
-    if (dispatch({ type: 'Leave', participantId: key }) === 'accepted') publish()
+    if (dispatch({ type: 'Leave', participantId: key }).outcome === 'accepted') publish()
   })
 
   return new Promise<RoomResult>((resolve) => {
@@ -246,12 +294,45 @@ export function joinRoom(input: { roomCode: string; displayName: string }, deps:
   let accepted = false
   let settled = false
   let resolveResult: (result: RoomResult) => void = () => undefined
+  let currentVote: { requestId: string; timer: unknown; failed: boolean } | null = null
 
   const close = () => {
     if (closed) return
     closed = true
+    if (currentVote) timers.clearTimeout(currentVote.timer)
+    currentVote = null
     emitter.clear()
     void teardown(deps.client, channel)
+  }
+
+  const failVote = (requestId: string) => {
+    if (closed || !currentVote || currentVote.requestId !== requestId || currentVote.failed) return
+    timers.clearTimeout(currentVote.timer)
+    currentVote.failed = true
+    emitter.emit({ type: 'vote-result', requestId, result: 'failed' })
+  }
+
+  // A failed request still accepts its own late ack; any other requestId is ignored.
+  const confirmVote = (requestId: string) => {
+    if (closed || !currentVote || currentVote.requestId !== requestId) return
+    timers.clearTimeout(currentVote.timer)
+    currentVote = null
+    emitter.emit({ type: 'vote-result', requestId, result: 'confirmed' })
+  }
+
+  const vote = (card: Card) => {
+    const requestId = createId()
+    if (closed) return requestId
+    if (currentVote) timers.clearTimeout(currentVote.timer)
+    currentVote = { requestId, timer: timers.setTimeout(() => failVote(requestId), VOTE_CONFIRM_MS), failed: false }
+    const intent = { requestId, participantId, roundId: (view as PublicView).roundId, card }
+    channel.send({ type: 'broadcast', event: 'room:vote-intent', payload: intent }).then(
+      (status) => {
+        if (status !== 'ok') failVote(requestId)
+      },
+      () => failVote(requestId),
+    )
+    return requestId
   }
 
   const hostLeft = () => {
@@ -265,6 +346,7 @@ export function joinRoom(input: { roomCode: string; displayName: string }, deps:
     participantId,
     roomCode,
     getView: () => view as PublicView,
+    vote,
     subscribe: emitter.subscribe,
     close,
   }
@@ -322,6 +404,16 @@ export function joinRoom(input: { roomCode: string; displayName: string }, deps:
       if (view.ended) return hostLeft()
       emitter.emit({ type: 'view', view })
     }
+  })
+
+  channel.on('broadcast', { event: 'room:vote-accepted' }, ({ payload }) => {
+    if (!isRecord(payload) || payload.participantId !== participantId || !isString(payload.requestId)) return
+    confirmVote(payload.requestId)
+  })
+
+  channel.on('broadcast', { event: 'room:vote-rejected' }, ({ payload }) => {
+    if (!isRecord(payload) || payload.participantId !== participantId || !isString(payload.requestId)) return
+    failVote(payload.requestId)
   })
 
   channel.on('broadcast', { event: 'room:host-left' }, ({ payload }) => {
