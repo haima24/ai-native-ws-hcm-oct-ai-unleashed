@@ -11,6 +11,18 @@ export const WAIT_FOR_REVOTE = 'Waiting for Host to start a revote.'
 export const REVEAL_ERROR = 'At least one vote is required to reveal'
 export const NO_VOTE = 'No vote'
 
+export interface ResultGroup {
+  card: string
+  count: number
+}
+
+export interface ResultGroupRow {
+  card: string
+  countText: string
+}
+
+const voteCountText = (count: number) => (count === 1 ? '1 vote' : `${count} votes`)
+
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 export class RoomPage {
@@ -27,8 +39,8 @@ export class RoomPage {
   readonly phaseWaiting: Locator
   readonly phaseHeading: Locator
   readonly resultsPanel: Locator
-  readonly average: Locator
-  readonly consensus: Locator
+  readonly resultGroups: Locator
+  readonly resultGroup: Locator
   readonly participation: Locator
   readonly cardButtons: Locator
   readonly cardGroup: Locator
@@ -50,8 +62,8 @@ export class RoomPage {
     this.phaseWaiting = page.getByTestId('phase-waiting')
     this.phaseHeading = page.getByTestId('phase-heading')
     this.resultsPanel = page.getByTestId('results-panel')
-    this.average = page.getByTestId('results-average')
-    this.consensus = page.getByTestId('results-consensus')
+    this.resultGroups = page.getByTestId('results-groups')
+    this.resultGroup = page.getByTestId('results-group')
     this.participation = page.getByTestId('results-participation')
     this.cardButtons = page.getByTestId('vote-cards').getByRole('button')
     this.cardGroup = page.getByRole('group', { name: 'Voting cards' })
@@ -123,10 +135,26 @@ export class RoomPage {
     }
   }
 
-  async expectResults(average: string, consensus: string) {
+  /** Asserts the grouped Results rows in order, then returns them as (card, count text) pairs for cross-client comparison. */
+  async expectGroups(expected: ResultGroup[]): Promise<ResultGroupRow[]> {
     await expect(this.resultsPanel).toBeVisible()
-    await expect(this.average).toHaveText(average)
-    await expect(this.consensus).toHaveText(consensus)
+    await expect(this.resultGroups).toBeVisible()
+    await expect(this.resultGroup).toHaveCount(expected.length)
+    const rows: ResultGroupRow[] = []
+    for (const [index, { card, count }] of expected.entries()) {
+      const row = this.resultGroup.nth(index)
+      const cardLabel = row.locator(':scope > span').first()
+      const countLabel = row.getByTestId('results-group-count')
+      const bar = row.getByTestId('results-group-bar')
+      await expect(cardLabel).toHaveText(card)
+      await expect(countLabel).toHaveText(voteCountText(count))
+      await expect(bar).toBeVisible()
+      await expect(bar).toHaveAttribute('aria-hidden', 'true')
+      const box = await bar.boundingBox()
+      expect(box?.width ?? 0).toBeGreaterThan(0)
+      rows.push({ card: (await cardLabel.innerText()).trim(), countText: (await countLabel.innerText()).trim() })
+    }
+    return rows
   }
 
   /** Roster cell text per name; order is not asserted. */

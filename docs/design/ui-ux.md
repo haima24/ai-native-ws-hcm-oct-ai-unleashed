@@ -58,6 +58,8 @@ Names and values are illustrative. Before reveal, the roster never shows other P
 
 Use normal page scrolling; do not force a 100vh container that clips controls. With 20 participants the main action stays reachable; names wrap rather than overlap status.
 
+Note: the colors below are superseded by US-004/US-005 and D-026/D-027 (vintage default plus five selectable themes).
+
 Visual tokens (US-004, vintage theme; proposed D-024) are defined once in `src/index.css` under `@theme` and used as Tailwind utilities: `paper` `#F3E9D2` (page, inputs), `panel` `#EADCBC` (roster, panels, cards), `ink` `#3E2C23` (text), `ink-muted` `#6B5646`, `accent` `#7A2E1D` (primary actions, selected card), `danger` `#9B1C1C`, `focus` `#1F4E79` (outline), `rule` `#8A6F4D` (borders); headings and card values use a system serif stack. Body text >=16px; card values about 32px; 4px rounding. Contrast of text pairs targets 4.5:1 and is measured in the story review, not assumed.
 
 Decoration (US-004 AC-004-09..11): a Home card-motif illustration, an ornamental divider under the Home title block and the Room header, corner ornaments on panels, and a faint paper texture. Decoration is inline SVG or CSS, identical for every Participant and state, hidden from assistive technology, never behind card values or text, and never blocks pointer input. No avatars or per-Participant imagery.

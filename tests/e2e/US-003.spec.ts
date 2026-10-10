@@ -96,10 +96,14 @@ test.describe('US-003 reveal and results', () => {
     const hostCells = await host.room.expectVoteCells(expected)
     const guestCells = await guest.room.expectVoteCells(expected)
     expect(guestCells).toEqual(hostCells)
-    for (const p of [host, guest]) {
-      await p.room.expectResults('6.5', 'No')
-      await expect(p.room.participation).toHaveText('2 of 2 voted')
-    }
+    const groups = [
+      { card: '5', count: 1 },
+      { card: '8', count: 1 },
+    ]
+    const hostGroups = await host.room.expectGroups(groups)
+    const guestGroups = await guest.room.expectGroups(groups)
+    expect(guestGroups).toEqual(hostGroups)
+    for (const p of [host, guest]) await expect(p.room.participation).toHaveText('2 of 2 voted')
   })
 
   test('TC-003-05 Reveal with no votes is blocked, then works after a vote', async ({ newPlayer }) => {
@@ -146,35 +150,41 @@ test.describe('US-003 reveal and results', () => {
     expect(new Set(Object.values(hostCells)).size).toBe(3)
   })
 
-  test('TC-003-25 Different numeric votes give the same Average and Consensus', async ({ newPlayer }) => {
+  test('TC-003-25 Grouped counts and ordering match on every client', async ({ newPlayer }) => {
     const { host, guest } = await roomWithGuest(newPlayer)
-    await cast(host, '5')
-    await cast(guest, '8')
+    await cast(host, '8')
+    await cast(guest, '5')
 
     await host.room.reveal()
     await expectRevealed(host, guest)
 
-    await host.room.expectResults('6.5', 'No')
-    await guest.room.expectResults('6.5', 'No')
+    const groups = [
+      { card: '5', count: 1 },
+      { card: '8', count: 1 },
+    ]
+    const hostGroups = await host.room.expectGroups(groups)
+    const guestGroups = await guest.room.expectGroups(groups)
+    expect(guestGroups).toEqual(hostGroups)
   })
 
-  test('TC-003-26 Zero votes are numeric', async ({ newPlayer }) => {
+  test('TC-003-26 Zero vote is grouped, not treated as no vote', async ({ newPlayer }) => {
     const { host, guest } = await roomWithGuest(newPlayer)
     await cast(host, '0')
-    await cast(guest, '0')
 
     await host.room.reveal()
     await expectRevealed(host, guest)
 
-    for (const p of [host, guest]) {
-      await p.room.expectResults('0', 'Yes')
-      await p.room.expectVoteCells({ Maya: '0', Noah: '0' })
-      await expect(p.room.voteCell('Maya')).not.toHaveText(NO_VOTE)
-      await expect(p.room.voteCell('Noah')).not.toHaveText(NO_VOTE)
-    }
+    const cells = { Maya: '0', Noah: NO_VOTE }
+    const hostCells = await host.room.expectVoteCells(cells)
+    const guestCells = await guest.room.expectVoteCells(cells)
+    expect(guestCells).toEqual(hostCells)
+    const hostGroups = await host.room.expectGroups([{ card: '0', count: 1 }])
+    const guestGroups = await guest.room.expectGroups([{ card: '0', count: 1 }])
+    expect(guestGroups).toEqual(hostGroups)
+    await expect(host.room.voteCell('Maya')).not.toHaveText(NO_VOTE)
   })
 
-  test('TC-003-27 All ? shows dashes', async ({ newPlayer }) => {
+  test('TC-003-27 ? appears as a counted group', async ({ newPlayer }) => {
     const { host, guest } = await roomWithGuest(newPlayer)
     await cast(host, '?')
     await cast(guest, '?')
@@ -182,10 +192,11 @@ test.describe('US-003 reveal and results', () => {
     await host.room.reveal()
     await expectRevealed(host, guest)
 
-    for (const p of [host, guest]) {
-      await p.room.expectResults('—', '—')
-      await p.room.expectVoteCells({ Maya: '?', Noah: '?' })
-    }
+    const groups = [{ card: '?', count: 2 }]
+    const hostGroups = await host.room.expectGroups(groups)
+    const guestGroups = await guest.room.expectGroups(groups)
+    expect(guestGroups).toEqual(hostGroups)
+    for (const p of [host, guest]) await p.room.expectVoteCells({ Maya: '?', Noah: '?' })
   })
 })
 
@@ -244,10 +255,11 @@ test.describe('US-003 revote', () => {
     await host.room.reveal()
     await expectRevealed(host, guest)
 
-    for (const p of [host, guest]) {
-      await p.room.expectResults('3', 'Yes')
-      await p.room.expectVoteCells({ Maya: '3', Noah: '3' })
-    }
+    for (const p of [host, guest]) await p.room.expectVoteCells({ Maya: '3', Noah: '3' })
+    const groups = [{ card: '3', count: 2 }]
+    const hostGroups = await host.room.expectGroups(groups)
+    const guestGroups = await guest.room.expectGroups(groups)
+    expect(guestGroups).toEqual(hostGroups)
   })
 
   test('TC-003-38 Host focus moves to the phase heading', async ({ newPlayer }) => {
