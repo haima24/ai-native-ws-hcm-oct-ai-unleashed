@@ -5,7 +5,7 @@ As a Host or Guest, I want to create a room or join one with a code or share lin
 
 - MVP feature: US-001 from [product brief](../product-brief.md)
 - Brief success criteria: 1 (roster updates within 2 s), 4 (flow works without a page reload; this story covers only the create/join part)
-- Decisions: D-004 (Accepted), D-006 (Accepted), D-016 (Accepted), D-017 (Accepted)
+- Decisions: D-004 (Accepted), D-006 (Accepted), D-016 (Accepted), D-017 (Accepted), D-003 (Accepted baseline), D-020 (Proposed)
 
 ## Scope
 **In scope**
@@ -59,7 +59,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Playwright u
 
 ### AC-001-07 Room code format validation
 - **Given** the user is on Home
-- **When** they submit `Join room` with an empty room code, or a code that after trimming is not exactly 6 characters or contains characters outside the code alphabet (e.g. `ABC12`, `ABC1234`, `ABC-12`, `ABO012`)
+- **When** they submit `Join room` with an empty room code, or a code that after trimming is not exactly 6 characters from A-Z and 0-9 (e.g. `ABC12`, `ABC1234`, `ABC-12`)
 - **Then** the matching field error from the Input validation table is shown beside `Room code`, no connection attempt result is shown as joined, and typed values stay in the fields
 
 ### AC-001-08 Connecting state and timeout
@@ -78,7 +78,12 @@ Keep AC IDs stable when revising. Each AC has an observable result. Playwright u
 - **Given** the Host and at least one Guest are in a room
 - **When** the Host closes or reloads the tab
 - **Then** each Guest sees the Host-left message from the Input validation table and a control to return to Home; no Players list is presented as live
-- **And** after the Guest returns to Home, joining with the old code shows the unknown-or-unreachable error from the Input validation table; the reloaded Host starts at Home with no room
+- **And** after the Guest returns to Home, joining with the old code shows the AC-001-11 error; the reloaded Host starts at Home with no room
+
+### AC-001-11 Unknown or unreachable room
+- **Given** a well-formed room code for which no room exists (never created, ended, or network unreachable)
+- **When** the user submits `Join room` and no join confirmation arrives within 5 s
+- **Then** the unknown-or-unreachable error is shown as a form-level message above the submit button, the form is usable again, and the typed room code and display name are kept
 
 ## Input validation
 | Field | Rule | Exact error message |
@@ -87,16 +92,16 @@ Keep AC IDs stable when revising. Each AC has an observable result. Playwright u
 | Display name | Trimmed length > 20 | `Display name must be 20 characters or fewer.` |
 | Display name | Must be unique in the room, ignoring case (join only) | `That name is already taken in this room.` |
 | Room code | Required; empty after trim | `Enter the room code.` |
-| Room code | After trim and case-normalization not exactly 6 characters from the code alphabet | `Room code must be 6 letters or digits.` |
-| Room (join) | Well-formed code, no Host response within 5 s, or network unreachable | `Room not found or unreachable. Check the code and try again.` |
+| Room code | After trim and upper-casing, not exactly 6 characters from A-Z and 0-9 | `Room code must be 6 letters or digits.` |
+| Room (join) | Well-formed code, no join confirmation within 5 s (no room, ended, or network unreachable); form-level message above the submit button | `Room not found or unreachable. Check the code and try again.` |
 | Connection (create 10 s / join 5 s) | Realtime connection not established within the limit | `Could not connect in time. Try again.` |
 | Room (Guest in room) | Host closed or reloaded the tab | `The Host closed the room. Return to Home to start or join another room.` |
 
-Existing UI strings reused unchanged from [UI/UX](../design/ui-ux.md): `Connecting…`, `Players`, `Copy link`, `Link copied`, `Could not copy link. Select and copy the link.`, `Connection lost. Reconnecting…`, `Not voted`, annotations `Host` and `You`. The messages in the table above are new copy proposed by this story; field errors appear beside the field, not as toasts.
+Existing UI strings reused unchanged from [UI/UX](../design/ui-ux.md): `Connecting…`, `Players`, `Copy link`, `Link copied`, `Could not copy link. Select and copy the link.`, `Connection lost. Reconnecting…`, `Not voted`, annotations `Host` and `You`. The messages in the table above are new copy proposed by this story; field errors appear beside the field, not as toasts; the unknown-or-unreachable room error is a form-level message above the submit button.
 
 ## Business rules
 1. Display name: trimmed, 1 to 20 characters, unique in the room ignoring case; the Host's name counts.
-2. Room code: 6 characters, case-insensitive (D-016). Generated from uppercase letters and digits excluding look-alikes `0`, `O`, `1`, `I` (alphabet: `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`). Input is trimmed and upper-cased before validation and lookup; typing `0`, `O`, `1` or `I` is malformed.
+2. Room code: 6 characters, case-insensitive (D-016). Generated from uppercase letters and digits excluding look-alikes `0`, `O`, `1`, `I` (alphabet: `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`). Input is trimmed and upper-cased before validation and lookup. Any 6 characters from A-Z and 0-9 after that are well-formed, including `0`, `O`, `1` and `I`; only generation uses the restricted alphabet.
 3. Share link opens Home with the room code prefilled; the Guest still enters a display name. Opening the link never auto-joins.
 4. The Host tab owns room state and the roster; Guests send a join intent and the Host publishes the roster (D-004). Phases are only `voting` and `revealed` (D-006); a new room starts in `voting`.
 5. A Guest may join in any phase, sees the current phase, and starts with no vote. No Participant cap.
@@ -120,13 +125,14 @@ Existing UI strings reused unchanged from [UI/UX](../design/ui-ux.md): `Connecti
 | AC-001-08 | — (US-001 "Done when") | D-003, D-017 |
 | AC-001-09 | 1 | D-004 |
 | AC-001-10 | — (brief out of scope: no host migration) | D-004 |
+| AC-001-11 | — (US-001 "Done when") | D-003, D-004 |
 
 D-017 is relevant only to environment configuration (needed by AC-001-08); no AC tests it directly.
 
 ## Dependencies
 - [product brief](../product-brief.md), [decisions](../knowledge/decisions.md), [glossary](../knowledge/glossary.md), [UI/UX](../design/ui-ux.md) (Home and Room shell).
 - Developer spec `docs/specs/US-001-dev-spec.md` and test cases `docs/test-cases/US-001-test-cases.md` must exist before production code.
-- Feasibility inputs for the Developer: Broadcast-only leave detection, Host-left detection, and distinguishing unknown room from timeout (see assumptions).
+- Feasibility inputs for the Developer: Supabase Realtime Presence on the same channel (no tables) is the candidate mechanism for leave and Host-left detection; the Developer verifies it in the spec (D-020). Also distinguishing unknown room from timeout (see assumptions).
 
 ## Open questions and assumptions
 | # | Question or assumption | Type | Status |
@@ -141,7 +147,7 @@ D-017 is relevant only to environment configuration (needed by AC-001-08); no AC
 | 8 | Create waits up to 10 s, join up to 5 s; baselines, not measured. | reversible assumption | Developer to verify |
 | 9 | Error message wording in the validation table is new copy. | reversible assumption | Open for mob review |
 | 10 | Can the client distinguish "no Host responded" from "transport not connected" so the unknown-or-unreachable message and the AC-001-08 timeout message differ? If not, both may collapse to one message. (The unknown-room case no longer has its own AC.) | question | Developer to answer in spec |
-| 11 | Can a Broadcast-only design reliably detect a closed or reloaded Host tab (and a closed Guest tab) without an arbitrary timer? UI/UX says not to invent a timer detector. | question | Developer to answer in spec |
+| 11 | Supabase Realtime Presence on the same channel (no tables) is the candidate mechanism for leave and Host-left detection; the Developer verifies it in the spec (D-020). Can it reliably detect a closed or reloaded Host tab and a closed Guest tab without an arbitrary timer? UI/UX says not to invent a timer detector. | question | Developer to answer in spec |
 
 ## Review
 - INVEST check: Small and Testable hold, but the story bundles create, join, validation and leave/Host-left behavior into 10 ACs. If the mob needs a smaller slice, AC-001-09 and AC-001-10 (leave handling) can be split into a follow-up without breaking the rest. The "Valuable" part depends on US-002/US-003 for a full demo.

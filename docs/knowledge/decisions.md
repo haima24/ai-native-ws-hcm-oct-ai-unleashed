@@ -23,5 +23,6 @@ These choices reuse the product direction in [product brief](../product-brief.md
 | D-017 | Accepted | Config only via Vite env vars: Supabase URL and anon key; no secrets committed | Browser config is public |
 | D-018 | Accepted | Revote increments a `roundId`; vote intents carry it; the Host rejects intents with a different `roundId` | A late vote from an earlier round must not count in a new round |
 | D-019 | Accepted | Consensus is all numeric votes equal; the adjacency rule is out of scope | Keeps the MVP rule simple |
+| D-020 | Proposed | Allow Supabase Realtime Presence on the room channel (no tables, no custom backend) for join/leave and Host-left detection; the Developer verifies feasibility in the US-001 spec | Leave and Host-left detection need a signal beyond plain Broadcast; extends D-003 only if verified |
 
 No completed spike, deployment or test execution is implied by this table. Domain terms: [glossary](glossary.md). Screens: [UI/UX](../design/ui-ux.md).
