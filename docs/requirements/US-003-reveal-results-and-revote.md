@@ -5,7 +5,7 @@ As the Host, I want to reveal the team's votes and start a revote, so that every
 
 - MVP feature: US-003 from [product brief](../product-brief.md)
 - Brief success criteria: 2 (values remain hidden until reveal); 3 (Host-only reveal/revote); 4 (full flow without reload); 5 (identical results for all clients)
-- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-008 (Accepted), D-009 (Accepted), D-010 (Accepted), D-014 (Accepted), D-018 (Accepted), D-019 (Accepted), D-015 (Proposed)
+- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-008 (Accepted), D-009 (Accepted), D-010 (Accepted), D-014 (Accepted), D-018 (Accepted), D-019 (Accepted), D-015 (Accepted), D-021 (Accepted), D-022 (Accepted), D-023 (Accepted)
 
 ## Scope
 **In scope**
@@ -130,28 +130,28 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 ## Business rules
 1. Phases are only `voting` and `revealed` (D-006). A new room starts in `voting` (US-001); Reveal changes it to `revealed`; Revote returns it to `voting`.
 2. Only the Host can Reveal or Revote. Guests never see those controls, and the Host ignores those intents from non-Host senders (D-007).
-3. Recommended rule, pending mob confirmation: Reveal requires at least one accepted vote. A pending selection is not an accepted vote (US-002); when there are none, the Host sees the AC-003-02 message and the phase stays `voting`.
+3. Reveal requires at least one accepted vote (Accepted via D-021). A pending selection is not an accepted vote (US-002); when there are none, the Host sees the AC-003-02 message and the phase stays `voting`.
 4. On Reveal, show the current Players roster's accepted vote values. Show `No vote` for a current Participant without a vote; show a cast `?` literally. `?` is distinct from no vote (glossary).
-5. Average is the arithmetic mean of current Participants' numeric votes; exclude `?` and `No vote` (D-009). Recommended display rule, pending mob confirmation: round to the nearest hundredth with exact midpoint rounded up, omit trailing zeroes, and display `—` if there are no numeric votes (D-015).
-6. Consensus is `Yes` if at least one numeric vote exists and all numeric votes are equal; otherwise `No` (D-010, D-019). Recommended display rule, pending mob confirmation: display `—` when there are no numeric votes (D-015).
-7. Recommended UI rule, pending mob confirmation: show `<voted> of <participants> voted`; count accepted `?` as voted. The denominator is the current Players roster (UI/UX proposal).
-8. A Guest joining in `revealed` has no vote under US-001. They appear as `No vote`; their presence changes only the participation count, not the existing votes, Average or Consensus.
+5. Average is the arithmetic mean of current Participants' numeric votes; exclude `?` and `No vote` (D-009). Round to the nearest hundredth with exact midpoint rounded up, omit trailing zeroes, and display `—` if there are no numeric votes (Accepted via D-015). Average is computed with integer arithmetic (sum / count, rounded half up to two decimals) to avoid floating point errors.
+6. Consensus is `Yes` if at least one numeric vote exists and all numeric votes are equal; otherwise `No` (D-010, D-019). Display `—` when there are no numeric votes (Accepted via D-015). A card `0` is a numeric vote: it counts in Average and Consensus (only `0` votes give Average `0` and Consensus `Yes`).
+7. Show `<voted> of <participants> voted`; count accepted `?` as voted. The denominator is the current Players roster (Accepted via D-022).
+8. A Guest joining in `revealed` has no vote under US-001. They appear as `No vote`; their presence changes only the participation count, not the existing votes, Average or Consensus (Accepted via D-023).
 9. A Revote clears accepted votes, pending local selections, per-Participant revealed values, Average, Consensus and participation count; it increments the round identifier and retains the same room (D-008, D-018).
 10. A vote intent from a previous round is rejected (D-018). An action that is unauthorized or invalid for the current phase leaves room state unchanged.
-11. Recommended assumption, pending mob review: the current Players roster defines the result population. When a Participant leaves, their vote is removed from the active round and excluded from revealed votes and calculations. The live roster/leave behavior itself is specified in US-001.
+11. The current Players roster defines the result population. When a Participant leaves, they are removed from Results and their vote is excluded; in `voting`, their vote is excluded if the Host later reveals the round. The live roster/leave behavior itself is specified in US-001 (Accepted via D-023).
 
 ## Traceability
 | AC | Brief success criterion | Decision ID |
 |---|---|---|
 | AC-003-01 | 4, 5 | D-004, D-006 |
-| AC-003-02 | US-003 Done when | Proposed rule; UI/UX proposal |
+| AC-003-02 | US-003 Done when | D-021 |
 | AC-003-03 | 2, 3 | D-005, D-007 |
 | AC-003-04 | 5 | D-005, D-009, D-011 |
-| AC-003-05 | 5 | D-009, D-015 (Proposed) |
-| AC-003-06 | 5 | D-010, D-015 (Proposed), D-019 |
-| AC-003-07 | UI/UX Results proposal | UI/UX proposal; mob confirmation needed |
-| AC-003-08 | 5; US-001 mid-round join rule | US-001 assumption; mob confirmation needed |
-| AC-003-09 | 5; US-001 leave behavior | US-001 AC-001-09; proposed rule |
+| AC-003-05 | 5 | D-009, D-015 |
+| AC-003-06 | 5 | D-010, D-015, D-019 |
+| AC-003-07 | UI/UX Results | D-022 |
+| AC-003-08 | 5; US-001 mid-round join rule | D-023 |
+| AC-003-09 | 5; US-001 leave behavior | US-001 AC-001-09; D-023 |
 | AC-003-10 | 4 | D-008, D-018 |
 | AC-003-11 | 3 | D-007 |
 | AC-003-12 | US-003 Done when | D-006, D-007, D-018 |
@@ -159,7 +159,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 
 ## Dependencies
 - [US-001 Create / join room](US-001-create-join-room.md): establishes the Host, current Players roster, Host-left behavior and Guest-join behavior; AC-001-09 and Business rule 5 affect result population.
-- [US-002 Vote with hidden cards](US-002-vote-with-hidden-card.md): provides the fixed card set, accepted votes, pending-vote distinction and phase-based voting availability.
+- [US-002 Vote with hidden cards](US-002-vote-with-hidden-card.md): provides the fixed card set, accepted votes, pending-vote distinction, phase-based voting availability and owns the `Connection lost. Reconnecting…` state used by AC-003-13.
 - [UI/UX](../design/ui-ux.md): Room shell, Host/Guest action matrix, revealed state, Results presentation, connection behavior, focus management and accessibility.
 - [Decisions](../knowledge/decisions.md) and [glossary](../knowledge/glossary.md): phase, role, result and round definitions.
 - Developer spec `docs/specs/US-003-dev-spec.md` and test cases `docs/test-cases/US-003-test-cases.md` must exist before production code, per project workflow.
@@ -167,13 +167,15 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 ## Open questions and assumptions
 | # | Question or assumption | Type (question / reversible assumption) | Status |
 |---|---|---|---|
-| 1 | Reveal is blocked until at least one vote is accepted, with the exact message in AC-003-02. | reversible assumption / recommendation | UI/UX marks this Proposed; mob must confirm before implementation |
-| 2 | D-015 display is adopted as a recommendation: Average rounded to at most two decimals; no numeric votes shows `—` for Average and Consensus. This story makes rounding and trailing-zero behavior explicit. | reversible assumption | D-015 remains Proposed; mob must accept or revise before implementation |
-| 3 | Show `<voted> of <participants> voted`, including `?` as a vote and using the current roster as denominator. | reversible assumption | UI/UX proposal; mob must confirm before implementation |
-| 4 | A Guest may join while `revealed` with no vote, per US-001; the Guest appears as `No vote` and changes the participation denominator only. | reversible assumption | US-001 Business rule 5 and assumption 4 are open for mob review; confirm there before implementation |
-| 5 | A Participant leaving is removed from the result population and their vote is excluded, including when the phase is already `revealed`. | reversible assumption | Needs mob confirmation; US-001 defines roster removal but not vote cleanup, and D-020 leave-detection feasibility remains Proposed |
+| 1 | Reveal is blocked until at least one vote is accepted, with the exact message in AC-003-02. | reversible assumption | Accepted via D-021 |
+| 2 | Average is rounded to at most two decimals; exact midpoints round up, trailing zeroes are omitted, and no numeric votes shows `—` for Average and Consensus. | reversible assumption | Accepted via D-015 |
+| 3 | Show `<voted> of <participants> voted`, including `?` as a vote and using the current roster as denominator. | reversible assumption | Accepted via D-022 |
+| 4 | A Guest may join while `revealed` with no vote, per US-001; the Guest appears as `No vote` and changes the participation denominator only. | reversible assumption | Accepted via D-023 |
+| 5 | A Participant leaving is removed from the result population and their vote is excluded, including when the phase is already `revealed`. | reversible assumption | Accepted via D-023 |
 | 6 | Vote intent acknowledgment and failed replacement-vote behavior are still open in US-002. US-003 uses only Host-accepted votes as the source for reveal and results. | question | Developer to resolve in US-002 spec before end-to-end implementation |
 
 ## Review
 - INVEST check: Small and testable as the final phase of one room round; Results and Revote remain together because they share the revealed state.
-- Material issues: D-015, zero-vote Reveal, the participation count, mid-revealed joins and vote cleanup on leave need mob confirmation. Leave handling also depends on the unresolved feasibility of D-020. These are explicit blockers to treating the story as implementation-ready, not assumed accepted decisions.
+- The round identifier (AC-003-10) and wrong-phase or non-Host intents (AC-003-12, AC-003-03, AC-003-11 intent part) have no UI control and are verified at unit or protocol level.
+- Live recalculation after Reveal for AC-003-09 is lower priority.
+- Material issue: The vote acknowledgement contract is owned by US-002 and remains the only open item.

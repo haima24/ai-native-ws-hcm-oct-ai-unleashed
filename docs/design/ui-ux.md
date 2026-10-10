@@ -76,7 +76,7 @@ Phases are `voting` and `revealed` only (D-006). Reveal and Revote are Host-only
 | Connection lost | Last view marked stale; voting and actions disabled; `Connection lost. Reconnecting…` | Same | Same |
 | Host left (Guest only) | Room ended: message `The Host closed the room. Return to Home to start or join another room.` and a return-to-Home button; no live Players list | n/a (Host tab closed or reloaded; reloaded Host starts at Home) | Return to Home |
 
-Proposed (confirm in US-002 before implementation): Reveal with zero votes is blocked with `At least one vote is required to reveal`.
+Accepted (D-021): Reveal with zero votes is blocked with `At least one vote is required to reveal`.
 
 Pending, failure and reconnection feedback is target behavior; BA and Developer reconcile it with ACs and the transport before implementation. Do not invent a Host-disconnect detector with an arbitrary timer; react to observed transport status. Host closing the tab ends the room (brief). Reveal and Revote must be enforced by the domain rules, not only by hidden buttons. An icon alone never conveys selected, voted or error state.
 
@@ -85,7 +85,7 @@ Pending, failure and reconnection feedback is target behavior; BA and Developer 
 - After reveal, show each Participant's value; `No vote` for no accepted vote. `?` is a cast abstention, distinct from no vote.
 - Show only `Average` and `Consensus` besides the per-Participant votes.
 - Average excludes `?` (D-009). Consensus is `Yes` when there is at least one numeric vote and all numeric votes are equal; otherwise `No` (D-010).
-- Proposed (D-015): Average to at most two decimals; with no numeric votes, Average and Consensus show `—`. Show `2 of 3 voted` to make participation explicit.
+- Accepted (D-015): Average to at most two decimals; with no numeric votes, Average and Consensus show `—`. Show `2 of 3 voted` to make participation explicit.
 - Consensus is all numeric votes equal; the adjacency variant is out of scope (D-019).
 
 ## 6. Accessibility and selectors

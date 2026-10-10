@@ -10,6 +10,7 @@ Remaining credits below are calculated from logged expenses, not read from the a
 | 2026-10-10 14:03 | Van | Build harness for application | 99.6 | use Claude sonet 5.5 |
 | 2026-10-10 14:44 | Van | build BA and dev spec | 100.4 | gpt 6 luna |
 | 2026-10-10 14:51 | Chuong | Update test spec | 207 |  |
+| 2026-10-10 15:32 | Van | Implement US001 | 197 | use Claude sonet |
 <!-- records:end -->
 
 ### AIC balance tracking
@@ -19,8 +20,8 @@ Remaining credits below are calculated from logged expenses, not read from the a
 |-------------|:----------:|:---------------------:|:-------------:|
 | Chuong | 4000 | 3793 | 207 |
 | Thao | 4000 | 3986.2 | 13.8 |
-| Van | 4000 | 3800 | 200 |
+| Van | 4000 | 3603 | 397 |
 <!-- aic:end -->
 
-**Total AIC consumed:** 420.8
+**Total AIC consumed:** 617.8
 <!-- aic:total -->

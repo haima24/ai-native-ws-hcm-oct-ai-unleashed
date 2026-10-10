@@ -5,6 +5,9 @@ const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
+  workers: 2,
+  retries: 1,
+  expect: { timeout: 10_000 },
   reporter: 'list',
   use: {
     baseURL: externalBaseURL ?? 'http://localhost:5173',

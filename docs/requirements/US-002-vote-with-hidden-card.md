@@ -5,7 +5,7 @@ As a Participant, I want to choose and change an estimate while votes are hidden
 
 - MVP feature: US-002 from [product brief](../product-brief.md)
 - Brief success criteria: 2 (other Participants see only vote status before reveal); 4 (vote is part of the create-to-reveal flow)
-- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-011 (Accepted)
+- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-011 (Accepted), D-014 (Accepted), D-018 (Accepted)
 
 ## Scope
 **In scope**
@@ -14,6 +14,7 @@ As a Participant, I want to choose and change an estimate while votes are hidden
 - Show a Participant's accepted-vote status to others without exposing the value before reveal.
 - Distinguish local pending selection from an accepted vote; provide vote-send feedback.
 - Disable voting when the room is `revealed` or the connection is lost.
+- Show `Connection lost. Reconnecting…` when the realtime connection drops and clear it on reconnect; US-001 does not implement this state.
 
 **Out of scope**
 - Creating or joining a room, display names and the Players roster structure (US-001).
@@ -46,7 +47,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Use separate
 
 ### AC-002-04 Vote not confirmed
 - **Given** a Participant selects a card while the room is in phase `voting`
-- **When** the vote is not confirmed
+- **When** the Host does not accept the vote within 5 s of it being sent
 - **Then** the UI shows `Vote was not confirmed. Try again.`
 - **And** the unconfirmed selection is not presented as an accepted vote
 - **And** the Participant can retry while the room remains in phase `voting`
@@ -64,7 +65,9 @@ Keep AC IDs stable when revising. Each AC has an observable result. Use separate
 ## Input validation
 | Field | Rule | Exact error message (if specified) |
 |---|---|---|
-| Card | A vote must use one of the nine fixed cards in AC-002-01; there is no free-form value input. | — |
+| Card | A vote must use one of the nine fixed cards in AC-002-01; there is no free-form value input. The Host ignores a vote intent with any other card value. | — |
+| Sender | The sender must be in the current roster; otherwise the Host ignores the vote intent. | — |
+| Round id | Must match the current round; otherwise the Host ignores the vote intent (D-018). | — |
 | Vote confirmation | A selected vote has not been confirmed. | `Vote was not confirmed. Try again.` |
 
 ## Business rules
@@ -75,14 +78,17 @@ Keep AC IDs stable when revising. Each AC has an observable result. Use separate
 5. A pending local selection is not evidence of an accepted vote. The Players status remains `Not voted` until a vote is accepted; the UI uses the pending and failure feedback specified in the UI/UX contract.
 6. Voting is unavailable in phase `revealed` and while the connection is lost. Revote returns the room to `voting` with votes cleared (US-003, D-008).
 7. This story does not define vote display after reveal or calculate results; US-003 owns those rules.
+8. A vote is confirmed only by an explicit Host acknowledgement carrying the request id; `hasVoted` alone cannot confirm a replacement vote. If a replacement fails, the new selection is marked not confirmed and Retry resends that same selection. The Host keeps the latest vote per Participant.
+9. The Host ignores a vote intent from a sender not in the current roster, with a card value outside the nine fixed cards, or with a round id different from the current round (D-018).
+10. A vote is not confirmed if the Host has not accepted it within 5 s of sending; this is a baseline to verify, like the US-001 timeouts.
 
 ## Traceability
 | AC | Brief success criterion | Decision ID |
 |---|---|---|
 | AC-002-01 | US-002 Done when | D-011 |
-| AC-002-02 | US-002 Done when; 4 | D-004, D-006 |
+| AC-002-02 | US-002 Done when; 4 | D-004, D-006, D-014 |
 | AC-002-03 | 2 | D-005 |
-| AC-002-04 | US-002 Done when | D-004 |
+| AC-002-04 | US-002 Done when | D-004, D-018 |
 | AC-002-05 | 4 | D-006, D-008 |
 | AC-002-06 | UI/UX voting state contract | D-003 |
 
@@ -90,16 +96,17 @@ Keep AC IDs stable when revising. Each AC has an observable result. Use separate
 - [US-001 Create / join room](US-001-create-join-room.md): successful room entry establishes the Participant identity and Room shell; this story does not redefine either.
 - [US-003 Reveal, results and revote](US-003-reveal-results-and-revote.md): owns phase transition to `revealed`, post-reveal presentation and return to voting through Revote; the zero-vote Reveal rule remains subject to mob confirmation there.
 - [UI/UX](../design/ui-ux.md): Room shell, card grid, selected/pending/accepted/failed states, phase behavior and accessibility.
-- [Decisions](../knowledge/decisions.md) and [glossary](../knowledge/glossary.md): D-004 through D-006, D-011 and shared definitions for Vote, Participant, Phase and Public view.
+- [Decisions](../knowledge/decisions.md) and [glossary](../knowledge/glossary.md): D-004 through D-006, D-011, D-014, D-018 and shared definitions for Vote, Participant, Phase and Public view.
 - Developer spec `docs/specs/US-002-dev-spec.md` and test cases `docs/test-cases/US-002-test-cases.md` must exist before production code, per project workflow.
 
 ## Open questions and assumptions
 | # | Question or assumption | Type (question / reversible assumption) | Status |
 |---|---|---|---|
 | 1 | Vote acceptance and failure feedback follow the UI/UX target: pending selection shows `Sending vote…`; lack of confirmation shows `Vote was not confirmed. Try again.` | reversible assumption | Open for mob review; Developer verifies what confirmation/failure the transport can reliably distinguish |
-| 2 | On a failed attempt to change an already confirmed vote, does the prior confirmed vote remain the displayed local selection, or can the Host have accepted the new vote without its confirmation reaching the sender? | question | Developer to resolve in the US-002 spec; align UI and tests to the actual acknowledgment contract |
+| 2 | A vote is confirmed only by an explicit Host acknowledgement carrying the request id; `hasVoted` alone cannot confirm a replacement vote. If a replacement fails, the new selection is marked not confirmed and Retry resends that same selection; the Host keeps the latest vote per Participant. | reversible assumption | Open for mob review; Developer verifies the acknowledgment contract in the US-002 spec |
 | 3 | The UI/UX proposal to block Reveal when there are zero votes is not specified here because Reveal belongs to US-003 and must be decided there before implementation. | question | US-003 BA/mob decision |
 
 ## Review
 - INVEST check: The slice is independently testable in a joined room and small enough to keep Reveal/Results in US-003.
-- Material issues: Vote acknowledgment semantics, especially a failed replacement vote, need a concrete transport contract before implementation; see open question 2.
+- `Sending vote…` is transient, so verify it at component level or with a delayed Host response, not with a plain e2e assertion.
+- Material issues: The explicit Host acknowledgment contract needs transport verification before implementation; see reversible assumption 2.
