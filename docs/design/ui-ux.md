@@ -1,5 +1,7 @@
 # UI/UX — Story Pointing
 
+Architecture: see the [solution architecture document](sad.md).
+
 **Status:** implementation target; not a claim of implemented UI or completed usability testing.
 **Owners:** BA defines behavior and copy; Developer maintains this design and the story selector contracts; Test verifies observable states.
 

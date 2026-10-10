@@ -12,6 +12,7 @@ Remaining credits below are calculated from logged expenses, not read from the a
 | 2026-10-10 14:51 | Chuong | Update test spec | 207 |  |
 | 2026-10-10 15:32 | Van | Implement US001 | 197 | use Claude sonet |
 | 2026-10-10 16:06 | Van | UPdate dev, test spec US002, 003 and implement e2e 001 | 265.2 | Just use sonet 5.5 for dev and test |
+| 2026-10-10 18:22 |Van | Update dev, test, docs | 1225 |  |
 <!-- records:end -->
 
 ### AIC balance tracking
@@ -21,8 +22,9 @@ Remaining credits below are calculated from logged expenses, not read from the a
 |-------------|:----------:|:---------------------:|:-------------:|
 | Chuong | 4000 | 3793 | 207 |
 | Thao | 4000 | 3986.2 | 13.8 |
+| Update dev, test, docs | 4000 | 2775 | 1225 |
 | Van | 4000 | 3337.8 | 662.2 |
 <!-- aic:end -->
 
-**Total AIC consumed:** 883
+**Total AIC consumed:** 2108
 <!-- aic:total -->

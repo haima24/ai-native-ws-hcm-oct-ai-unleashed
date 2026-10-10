@@ -8,6 +8,7 @@ A project convention, not a universal standard. The goal is one source of truth 
 |---|---|---|
 | [Product brief](product-brief.md) | What are we building, for whom, what is in scope? | BA + mob |
 | [UI/UX](design/ui-ux.md) | What do screens look like, how do users interact? | BA defines behavior; Developer maintains design |
+| [Solution architecture](design/sad.md) | How is the system built: components, runtime flows, message contract, known gaps? | Developer maintains; mob reviews |
 | [Decisions](knowledge/decisions.md) | Why this choice; decided or only proposed? | Mob decides; Developer records technical decisions |
 | [Glossary](knowledge/glossary.md) | What do Host, Participant, Vote and Results mean? | BA maintains; all roles reference |
 | [Supabase setup](knowledge/supabase-setup.md) | How is Supabase configured; what to check before the demo? | Developer; Van verifies dashboard settings |

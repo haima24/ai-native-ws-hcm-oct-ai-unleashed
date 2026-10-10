@@ -50,6 +50,7 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
 - Hosting: Vercel. Rationale: free public demo URL.
 - Testing: Vitest for domain logic; Playwright e2e with separate Host and Guest contexts, authored and run through Playwright MCP, also runnable against the deployed Vercel URL. Rationale: fast logic checks plus real multi-user verification.
 - US-004 and US-005 add no new libraries; they use the existing Tailwind build, inline SVG and CSS.
+- Architecture: see the [solution architecture document](design/sad.md).
 
 ## Open decisions
 None open. See [decisions](knowledge/decisions.md): D-005, D-016, D-025, D-026, D-027.
