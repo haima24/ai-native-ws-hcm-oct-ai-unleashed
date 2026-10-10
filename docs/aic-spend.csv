@@ -1,3 +1,5 @@
 ﻿"Timestamp","Member","Activity","Spent","UsedCredits","Optimization"
 "2026-10-10T13:27:26.2548956+11:00","Thao","Build product brief for project","13.8","13.8","use Claude sonet 5.5 to build "
 "2026-10-10T14:03:58.0474514+11:00","Van","Build harness for application","99.6","99.6","use Claude sonet 5.5"
+"2026-10-10T14:44:43.4875696+11:00","Van","build BA and dev spec","100.4","200","gpt 6 luna"
+"2026-10-10T14:51:25.6026990+11:00","Chuong","Update test spec","207","207",""

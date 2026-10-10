@@ -8,6 +8,8 @@ Remaining credits below are calculated from logged expenses, not read from the a
 |------|--------|----------|--------------:|----------------------|
 | 2026-10-10 13:27 | Thao | Build product brief for project | 13.8 | use Claude sonet 5.5 to build |
 | 2026-10-10 14:03 | Van | Build harness for application | 99.6 | use Claude sonet 5.5 |
+| 2026-10-10 14:44 | Van | build BA and dev spec | 100.4 | gpt 6 luna |
+| 2026-10-10 14:51 | Chuong | Update test spec | 207 |  |
 <!-- records:end -->
 
 ### AIC balance tracking
@@ -15,9 +17,10 @@ Remaining credits below are calculated from logged expenses, not read from the a
 <!-- aic:start -->
 | Team member | AIC before | AIC after (remaining) | Delta (spent) |
 |-------------|:----------:|:---------------------:|:-------------:|
+| Chuong | 4000 | 3793 | 207 |
 | Thao | 4000 | 3986.2 | 13.8 |
-| Van | 4000 | 3900.4 | 99.6 |
+| Van | 4000 | 3800 | 200 |
 <!-- aic:end -->
 
-**Total AIC consumed:** 113.4
+**Total AIC consumed:** 420.8
 <!-- aic:total -->

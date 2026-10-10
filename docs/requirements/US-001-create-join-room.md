@@ -81,7 +81,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Playwright u
 - **And** after the Guest returns to Home, joining with the old code shows the AC-001-11 error; the reloaded Host starts at Home with no room
 
 ### AC-001-11 Unknown or unreachable room
-- **Given** a well-formed room code for which no room exists (never created, ended, or network unreachable)
+- **Given** a well-formed room code for which no room exists (never created or ended) or for which no Host responds
 - **When** the user submits `Join room` and no join confirmation arrives within 5 s
 - **Then** the unknown-or-unreachable error is shown as a form-level message above the submit button, the form is usable again, and the typed room code and display name are kept
 
@@ -93,7 +93,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Playwright u
 | Display name | Must be unique in the room, ignoring case (join only) | `That name is already taken in this room.` |
 | Room code | Required; empty after trim | `Enter the room code.` |
 | Room code | After trim and upper-casing, not exactly 6 characters from A-Z and 0-9 | `Room code must be 6 letters or digits.` |
-| Room (join) | Well-formed code, no join confirmation within 5 s (no room, ended, or network unreachable); form-level message above the submit button | `Room not found or unreachable. Check the code and try again.` |
+| Room (join) | Well-formed code, no join confirmation within 5 s (no room, ended, or no Host response); form-level message above the submit button | `Room not found or unreachable. Check the code and try again.` |
 | Connection (create 10 s / join 5 s) | Realtime connection not established within the limit | `Could not connect in time. Try again.` |
 | Room (Guest in room) | Host closed or reloaded the tab | `The Host closed the room. Return to Home to start or join another room.` |
 
@@ -109,6 +109,7 @@ Existing UI strings reused unchanged from [UI/UX](../design/ui-ux.md): `Connecti
 7. Host closes or reloads the tab: the room ends, Guests see the Host-left message and return to Home. No host migration.
 8. Guest reload returns to Home with the room code and display name prefilled; no automatic rejoin.
 9. Connection limits: create 10 s, join 5 s. These are baselines to verify, not measured. While connecting, submission is disabled; typed input is kept on any failure.
+   A failure to establish the realtime connection before subscription is AC-001-08, not AC-001-11.
 10. Supabase URL and anon key come only from Vite env vars (D-017); no secrets in this story's artifacts.
 11. Players list shows the same set of names to every Participant; ordering is not specified.
 
