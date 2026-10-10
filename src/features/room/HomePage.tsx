@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { isWellFormedRoomCode, normalizeRoomCode, validateDisplayName } from '../../domain/room'
 import HomeIllustration from './HomeIllustration'
+import ThemeIcon from '../theme/ThemeIcon'
+import ThemePicker from '../theme/ThemePicker'
+import { useTheme } from '../theme/themeStore'
 import type { UseRoomConnection } from './useRoomConnection'
 
 const NAME_STORAGE_KEY = 'story-pointing:display-name'
@@ -51,6 +54,7 @@ export default function HomePage({ connection }: { connection: UseRoomConnection
 
   const { pending, failure, duplicateName } = connection
   const connecting = pending !== null
+  const theme = useTheme()
 
   const onCreate = (event: FormEvent) => {
     event.preventDefault()
@@ -92,10 +96,12 @@ export default function HomePage({ connection }: { connection: UseRoomConnection
         </div>
       </div>
       <div aria-hidden="true" className="ornament-divider mt-4" />
+      <ThemePicker className="mt-4" />
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <section aria-labelledby="create-heading" className="ornate rounded border border-rule bg-panel p-4">
-          <h2 id="create-heading" className="text-xl font-semibold">
+          <h2 id="create-heading" className="flex items-center gap-2 text-xl font-semibold">
+            <ThemeIcon theme={theme} className="h-6 w-6 text-accent" />
             Create room
           </h2>
           <form onSubmit={onCreate} noValidate className="mt-3 space-y-3">
@@ -129,7 +135,8 @@ export default function HomePage({ connection }: { connection: UseRoomConnection
         </section>
 
         <section aria-labelledby="join-heading" className="ornate rounded border border-rule bg-panel p-4">
-          <h2 id="join-heading" className="text-xl font-semibold">
+          <h2 id="join-heading" className="flex items-center gap-2 text-xl font-semibold">
+            <ThemeIcon theme={theme} className="h-6 w-6 text-accent" />
             Join room
           </h2>
           <form onSubmit={onJoin} noValidate className="mt-3 space-y-3">

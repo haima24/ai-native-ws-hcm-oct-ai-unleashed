@@ -1,14 +1,18 @@
 import type { RoundResults } from '../../types/room'
+import ThemeIcon from '../theme/ThemeIcon'
+import { useTheme } from '../theme/themeStore'
 
 export default function ResultsPanel({ results }: { results: RoundResults }) {
+  const theme = useTheme()
   return (
     <section aria-labelledby="results-heading" data-testid="results-panel" className="ornate mt-6 rounded border border-rule bg-panel p-3">
       <h3
         id="results-heading"
         tabIndex={-1}
         data-testid="results-heading"
-        className="text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="flex w-fit items-center gap-2 text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
+        <ThemeIcon theme={theme} className="h-5 w-5 text-accent" />
         Results
       </h3>
       <dl className="mt-2 flex flex-wrap gap-x-8 gap-y-2">

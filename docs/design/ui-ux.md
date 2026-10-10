@@ -58,7 +58,11 @@ Names and values are illustrative. Before reveal, the roster never shows other P
 
 Use normal page scrolling; do not force a 100vh container that clips controls. With 20 participants the main action stays reachable; names wrap rather than overlap status.
 
-Visual tokens (targets, applied via Tailwind utilities): page `#FFFFFF`; cards/roster `#F1F3F4`; text `#263238`; secondary `#546E7A`; accent/selected `#455A64` with white text; error `#B3261E`; focus outline `#005FCC`. Body text ≥16px; card values about 32px; 4px rounding; no gradients or large shadows.
+Visual tokens (US-004, vintage theme; proposed D-024) are defined once in `src/index.css` under `@theme` and used as Tailwind utilities: `paper` `#F3E9D2` (page, inputs), `panel` `#EADCBC` (roster, panels, cards), `ink` `#3E2C23` (text), `ink-muted` `#6B5646`, `accent` `#7A2E1D` (primary actions, selected card), `danger` `#9B1C1C`, `focus` `#1F4E79` (outline), `rule` `#8A6F4D` (borders); headings and card values use a system serif stack. Body text >=16px; card values about 32px; 4px rounding. Contrast of text pairs targets 4.5:1 and is measured in the story review, not assumed.
+
+Decoration (US-004 AC-004-09..11): a Home card-motif illustration, an ornamental divider under the Home title block and the Room header, corner ornaments on panels, and a faint paper texture. Decoration is inline SVG or CSS, identical for every Participant and state, hidden from assistive technology, never behind card values or text, and never blocks pointer input. No avatars or per-Participant imagery.
+
+Themes (US-005; proposed D-025): the `Theme` picker offers Vintage (default), Light, Dark, Ocean, Sunny and Forest with a text name and icon each. It sits in the Room header on its own row and below the divider on Home. Each theme overrides the eight color tokens above in `src/index.css` under `:root[data-theme="<id>"]` and sets its own illustration, icon and ornament style. The choice is local to the browser (`localStorage`), applied before first paint, and never sent to other Participants. The values per theme are in the [US-005 dev spec](../specs/US-005-dev-spec.md).
 
 ## 4. State and action matrix
 
