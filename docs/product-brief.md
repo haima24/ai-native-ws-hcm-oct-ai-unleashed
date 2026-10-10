@@ -17,15 +17,15 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
    - Value: independent estimates, so nobody anchors on others' votes.
    - Done when: each Participant picks a card (0, 1, 2, 3, 5, 8, 13, 21, ?), can change it before reveal, and others see only "Voted / Not voted".
 3. **US-003 Reveal, results and revote**
-   - Value: the team sees the spread and agreement at once and re-estimates without a new room.
-   - Done when: only the Host can reveal; all clients show every vote, the average (excluding `?`) and a consensus indicator (all numeric votes equal); only the Host can revote, which clears all votes for a new round in the same room.
+   - Value: the team sees how estimates are distributed and re-estimates without a new room.
+   - Done when: only the Host can reveal; all clients show every vote and grouped counts per accepted card value in ascending numeric order, with `?` last, plus the participation count; only the Host can revote, which clears all votes for a new round in the same room.
 
 ## Success criteria
 1. Host and Guest in separate browser contexts see roster updates within 2 s.
 2. Before reveal, the UI of other Participants never shows vote values, only Voted / Not voted; network-level privacy is not guaranteed (D-005).
 3. The Guest UI has no Reveal/Revote controls; the Host ignores such intents from non-Host clients.
 4. Create > join > vote > reveal > revote > reveal works without a page reload.
-5. After reveal, all clients show identical votes, average and consensus.
+5. After reveal, all clients show identical votes, grouped counts per card value and participation count.
 6. The public Vercel URL passes the Playwright happy-path e2e.
 
 ## Out of scope
