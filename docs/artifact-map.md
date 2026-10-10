@@ -10,6 +10,7 @@ A project convention, not a universal standard. The goal is one source of truth 
 | [UI/UX](design/ui-ux.md) | What do screens look like, how do users interact? | BA defines behavior; Developer maintains design |
 | [Decisions](knowledge/decisions.md) | Why this choice; decided or only proposed? | Mob decides; Developer records technical decisions |
 | [Glossary](knowledge/glossary.md) | What do Host, Participant, Vote, Consensus mean? | BA maintains; all roles reference |
+| [Supabase setup](knowledge/supabase-setup.md) | How is Supabase configured; what to check before the demo? | Developer; Van verifies dashboard settings |
 | [Token log](token-log.md) | How much AI usage did the team spend? | Mob |
 
 Agents do not need these pasted in: the global instructions in `.github/copilot-instructions.md` point to them. Each task reads only the relevant parts and re-reads when they change. The glossary is not a place to hide new business rules; a rule needs an AC and a test.
