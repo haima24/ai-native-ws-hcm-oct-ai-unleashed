@@ -12,23 +12,24 @@ These choices reuse the product direction in [product brief](../product-brief.md
 | D-006 | Accepted | Phases are only `voting` and `revealed` | No waiting phase, story title or Next story in this MVP |
 | D-007 | Accepted | Reveal and Revote are Host-only; Guests see no such controls and the Host ignores those intents from non-Host senders | UI hiding alone is not enforcement |
 | D-008 | Accepted | Revote clears all votes and returns the same room to `voting` | Re-estimate without a new room |
-| D-009 | Accepted | Average excludes `?` | Abstention is not a number |
-| D-010 | Accepted | Consensus: all numeric votes equal; `?` is excluded like in Average | Matches the brief; see D-019 |
+| D-009 | Superseded by D-025 | Average excludes `?` | Abstention is not a number |
+| D-010 | Superseded by D-025 | Consensus: all numeric votes equal; `?` is excluded like in Average | Matches the brief; see D-019 |
 | D-011 | Accepted | Cards: 0, 1, 2, 3, 5, 8, 13, 21, ? | Fixed MVP scale |
 | D-012 | Accepted | Vitest for domain logic; Playwright e2e with separate Host and Guest contexts, authored and run via Playwright MCP when available | Domain and cross-user verification |
 | D-013 | Accepted target | Vercel hosting; the Playwright happy path also runs against the public URL | Public demo |
 | D-014 | Accepted | Revision increases only for accepted changes; Guests ignore older state views | Do not rely on arrival order |
-| D-015 | Accepted | Average shown to at most 2 decimals; no numeric votes shows `—` for Average and Consensus | Consistent result display |
+| D-015 | Superseded by D-025 | Average shown to at most 2 decimals; no numeric votes shows `—` for Average and Consensus | Consistent result display |
 | D-016 | Accepted | Room code is 6 characters, case-insensitive | Easy to share and type |
 | D-017 | Accepted | Config only via Vite env vars: Supabase URL and anon key; no secrets committed | Browser config is public |
 | D-018 | Accepted | Revote increments a `roundId`; vote intents carry it; the Host rejects intents with a different `roundId` | A late vote from an earlier round must not count in a new round |
-| D-019 | Accepted | Consensus is all numeric votes equal; the adjacency rule is out of scope | Keeps the MVP rule simple |
+| D-019 | Superseded by D-025 | Consensus is all numeric votes equal; the adjacency rule is out of scope | Keeps the MVP rule simple |
 
 | D-020 | Proposed | Allow Supabase Realtime Presence on the room channel (no tables, no custom backend) for join/leave and Host-left detection; the Developer verifies feasibility in the US-001 spec | Leave and Host-left detection need a signal beyond plain Broadcast; extends D-003 only if verified |
 | D-021 | Accepted | Reveal requires at least one accepted vote; message `At least one vote is required to reveal` | Prevents revealing an empty round |
 | D-022 | Accepted | Results show `<voted> of <participants> voted` using the current roster as denominator; an accepted `?` counts as voted | Makes participation clear without treating abstention as no vote |
 | D-023 | Accepted | The result population is the current roster: a Participant who leaves is removed from Results and their vote is excluded; a Guest joining in `revealed` appears as `No vote` and changes only the participation denominator | Keeps displayed results aligned with current room membership |
-| D-024 | Accepted | Supersedes D-009, D-010, D-015 and D-019 for US-003 Results: show counts grouped by accepted card value, numeric values ascending with `?` last; do not show Average or Consensus. A compact horizontal bar per card value is suggested. | Makes the distribution of estimates directly visible without reducing it to summary metrics |
+| D-024 | Accepted | Guest sends best-effort `room:guest-left` on `pagehide`; Presence leave remains the fallback; unauthenticated like all Broadcast per D-005 | e2e showed reload leave latency with Presence only |
+| D-025 | Accepted | Results show accepted votes grouped by card value with counts (numeric ascending, ? last, no-vote excluded) plus a simple horizontal bar; supersedes D-009, D-010, D-015, D-019 for US-003 Results | Shows the distribution without summary metrics |
 | D-025 | Proposed | One fixed vintage theme and fixed decorative imagery (inline SVG/CSS) on the existing Tailwind setup; no Bootstrap, no theme switcher, no avatars; supersedes the colour tokens in UI/UX section 3 and is an exception to the brief's "themes" exclusion | US-004 asks for a polished look; the mob must accept the scope exception before it counts as decided |
 | D-026 | Proposed | Six selectable themes (Vintage default, Light, Dark, Ocean, Sunny, Forest) with themed inline-SVG/CSS imagery; the choice is per Participant, stored in `localStorage`, never sent over the realtime channel or in the URL; supersedes the "one fixed theme" part of D-024 | US-005; presentation only, so rules, privacy (D-005) and the Host-owned state (D-004) are unaffected; the mob must accept the scope exception |
 

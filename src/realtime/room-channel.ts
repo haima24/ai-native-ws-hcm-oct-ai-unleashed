@@ -247,9 +247,19 @@ export function createRoom(input: { displayName: string }, deps: RoomChannelDeps
   })
 
   // Presence join/sync never change the roster; only a leave of an accepted Guest does.
+  const removeGuest = (participantId: string) => {
+    if (closed || participantId === hostId) return
+    if (dispatch({ type: 'Leave', participantId }).outcome === 'accepted') publish()
+  }
+
   channel.on('presence', { event: 'leave' }, ({ key }) => {
-    if (closed || !key || key === hostId) return
-    if (dispatch({ type: 'Leave', participantId: key }).outcome === 'accepted') publish()
+    if (key) removeGuest(key)
+  })
+
+  // Best-effort faster signal than Presence for a reloading Guest (D-024).
+  channel.on('broadcast', { event: 'room:guest-left' }, ({ payload }) => {
+    if (!isRecord(payload) || payload.roomCode !== roomCode || !isString(payload.participantId)) return
+    removeGuest(payload.participantId)
   })
 
   return new Promise<RoomResult>((resolve) => {
@@ -287,6 +297,7 @@ export function joinRoom(input: { roomCode: string; displayName: string }, deps:
   const requestId = createId()
   const channel = deps.client.channel(channelName(roomCode), channelConfig(participantId))
   const emitter = createEmitter()
+  const pageHide = deps.pageHideTarget ?? (typeof window !== 'undefined' ? window : undefined)
   let view: PublicView | null = null
   let hostId: string | null = null
   let closed = false
@@ -296,9 +307,14 @@ export function joinRoom(input: { roomCode: string; displayName: string }, deps:
   let resolveResult: (result: RoomResult) => void = () => undefined
   let currentVote: { requestId: string; timer: unknown; failed: boolean } | null = null
 
+  const onPageHide = () => {
+    void channel.send({ type: 'broadcast', event: 'room:guest-left', payload: { roomCode, participantId } })
+  }
+
   const close = () => {
     if (closed) return
     closed = true
+    pageHide?.removeEventListener('pagehide', onPageHide)
     if (currentVote) timers.clearTimeout(currentVote.timer)
     currentVote = null
     emitter.clear()
@@ -363,6 +379,7 @@ export function joinRoom(input: { roomCode: string; displayName: string }, deps:
     if (settled || !accepted || !view) return
     settled = true
     timers.clearTimeout(timer)
+    pageHide?.addEventListener('pagehide', onPageHide)
     resolveResult({ status: 'joined', session })
   }
 

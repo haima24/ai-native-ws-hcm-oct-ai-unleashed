@@ -18,7 +18,7 @@ Story Pointing is a planning-poker web app for agile teams. A Host creates a roo
    - Done when: each Participant picks a card (0, 1, 2, 3, 5, 8, 13, 21, ?), can change it before reveal, and others see only "Voted / Not voted".
 3. **US-003 Reveal, results and revote**
    - Value: the team sees how estimates are distributed and re-estimates without a new room.
-   - Done when: only the Host can reveal; all clients show every vote and grouped counts per accepted card value in ascending numeric order, with `?` last, plus the participation count; only the Host can revote, which clears all votes for a new round in the same room.
+   - Done when: only the Host can reveal; all clients show every vote and grouped counts per accepted card value in ascending numeric order, with `?` last, plus a simple horizontal bar per group and the participation count; only the Host can revote, which clears all votes for a new round in the same room.
 
 ## Success criteria
 1. Host and Guest in separate browser contexts see roster updates within 2 s.

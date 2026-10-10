@@ -4,9 +4,7 @@ Shared vocabulary for stories, specs, tests and code. The last column lists conf
 
 | Term | Definition | Do not call it |
 |---|---|---|
-| Average | Arithmetic mean of the numeric votes in a round; `?` votes are excluded. | Mean score, result |
 | Card | One selectable value on the Fibonacci scale shown in the UI. | Option |
-| Consensus | True when there is at least one numeric vote and all numeric votes are equal. `?` is excluded, as in Average. | Agreement, match |
 | Display name | The name a Participant types when joining. | Username, nickname |
 | Fibonacci scale | The fixed set of cards: 0, 1, 2, 3, 5, 8, 13, 21, `?`. No custom scales. | Deck |
 | Guest | A Participant who is not the Host. Cannot reveal or revote. | Player, client |
@@ -16,7 +14,7 @@ Shared vocabulary for stories, specs, tests and code. The last column lists conf
 | Phase | Where the room is in a round: `voting` or `revealed`. | Status, state |
 | Public view | The room state the Host broadcasts: who has voted, with vote values hidden until reveal. | Full state |
 | Reducer | Pure function `(room, action) -> room` that applies every state change on the Host. | Handler |
-| Results | Shown after reveal: each Participant's vote, Average and Consensus. | Summary, report |
+| Results | Shown after reveal: each Participant's vote, grouped counts for accepted card values, and participation count. | Summary, report |
 | Reveal | Host-only action that makes all votes visible to everyone at once. | Publish |
 | Revote | Host-only action that clears all votes and returns the same room to `voting`. | Reset, next story |
 | Room | Ephemeral shared space identified by a room code; ends when the Host closes the tab. | Session, lobby |
@@ -36,7 +34,7 @@ Shared vocabulary for stories, specs, tests and code. The last column lists conf
 | Selected card | Local choice; can be pending and is not proof the Host accepted a Vote |
 | Voted | The Host has accepted a Vote for this Participant in the current round |
 | Not voted / No vote | No accepted Vote; different from the cast `?` value |
-| `?` | A cast abstention; shown in the roster after reveal but excluded from Average and Consensus |
+| `?` | A cast abstention; shown in the roster after reveal and counted as its own Results group |
 | Waiting for Host | Guest-side text where the Host would see Reveal or Revote |
 | Public view | Projection for shared display. Omitting values alone does not guarantee transport privacy (D-005) |
 

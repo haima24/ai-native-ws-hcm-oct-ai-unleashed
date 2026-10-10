@@ -5,7 +5,7 @@ As the Host, I want to reveal the team's votes and start a revote, so that every
 
 - MVP feature: US-003 from [product brief](../product-brief.md)
 - Brief success criteria: 2 (values remain hidden until reveal); 3 (Host-only reveal/revote); 4 (full flow without reload); 5 (identical results for all clients)
-- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-008 (Accepted), D-014 (Accepted), D-018 (Accepted), D-021 (Accepted), D-022 (Accepted), D-023 (Accepted), D-024 (Accepted; supersedes D-009, D-010, D-015 and D-019 for US-003 Results).
+- Decisions: D-004 (Accepted), D-005 (Accepted), D-006 (Accepted), D-007 (Accepted), D-008 (Accepted), D-014 (Accepted), D-018 (Accepted), D-021 (Accepted), D-022 (Accepted), D-023 (Accepted), D-025 (Accepted; supersedes D-009, D-010, D-015 and D-019 for US-003 Results).
 
 ## Scope
 **In scope**
@@ -54,7 +54,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 ### AC-003-05 Show grouped vote counts
 - **Given** the room is in phase `revealed`
 - **When** a Participant views Results
-- **Then** Results show one entry for each card value cast by at least one current Participant, with the count for that value (for example, `1 vote 2`, `5 votes 3`)
+- **Then** Results show one row for each card value cast by at least one current Participant; each row shows the card label, a bar, and the exact count text `<n> vote` when the count is 1 or `<n> votes` otherwise (for example, `1 vote`, `2 votes`)
 - **And** `?` is grouped and counted as its own card value
 - **And** Participants without an accepted vote are not included in any card-value count
 
@@ -62,7 +62,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 - **Given** the room is in phase `revealed` and Results contain grouped vote counts
 - **When** a Participant views Results
 - **Then** numeric card values are ordered from lowest to highest, with `?` after all numeric values
-- **And** the suggested simple visualization is a compact horizontal bar per card value, labeled with its value and vote count
+- **And** each group uses a simple horizontal bar
 - **And** all connected Participants see the same grouped counts and ordering for the same current room state
 
 ### AC-003-07 Show participation count
@@ -128,8 +128,8 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 2. Only the Host can Reveal or Revote. Guests never see those controls, and the Host ignores those intents from non-Host senders (D-007).
 3. Reveal requires at least one accepted vote (Accepted via D-021). A pending selection is not an accepted vote (US-002); when there are none, the Host sees the AC-003-02 message and the phase stays `voting`.
 4. On Reveal, show the current Players roster's accepted vote values. Show `No vote` for a current Participant without a vote; show a cast `?` literally. `?` is distinct from no vote (glossary).
-5. Group current Participants' accepted votes by card value and show each value's count. Include `?` as a distinct group and exclude `No vote`.
-6. Order numeric card values from lowest to highest and place `?` after numeric values. A compact horizontal bar per card value, labeled with its value and count, is the suggested visualization.
+5. Group current Participants' accepted votes by card value and show each value's count. Each row shows the card label, a bar, and `<n> vote` for a count of 1 or `<n> votes` otherwise. Include `?` as a distinct group and exclude `No vote` (D-025).
+6. Order numeric card values from lowest to highest and place `?` after numeric values. Show a simple horizontal bar for each group (D-025).
 7. Show `<voted> of <participants> voted`; count accepted `?` as voted. The denominator is the current Players roster (Accepted via D-022).
 8. A Guest joining in `revealed` has no vote under US-001. They appear as `No vote`; their presence changes only the participation denominator, not existing vote groups (Accepted via D-023).
 9. A Revote clears accepted votes, pending local selections, per-Participant revealed values, grouped vote counts and participation count; it increments the round identifier and retains the same room (D-008, D-018).
@@ -143,8 +143,8 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 | AC-003-02 | US-003 Done when | D-021 |
 | AC-003-03 | 2, 3 | D-005, D-007 |
 | AC-003-04 | 5 | D-005, D-011 |
-| AC-003-05 | 5 | D-024 |
-| AC-003-06 | 5 | D-024 |
+| AC-003-05 | 5 | D-025 |
+| AC-003-06 | 5 | D-025 |
 | AC-003-07 | UI/UX Results | D-022 |
 | AC-003-08 | 5; US-001 mid-round join rule | D-023 |
 | AC-003-09 | 5; US-001 leave behavior | US-001 AC-001-09; D-023 |
@@ -164,7 +164,7 @@ Keep AC IDs stable when revising. Each AC has an observable result. Cross-Partic
 | # | Question or assumption | Type (question / reversible assumption) | Status |
 |---|---|---|---|
 | 1 | Reveal is blocked until at least one vote is accepted, with the exact message in AC-003-02. | reversible assumption | Accepted via D-021 |
-| 2 | Results show counts grouped by accepted card value, with numeric values ascending and `?` last; a compact horizontal bar per value is the suggested visualization. | reversible assumption | Accepted via D-024 |
+| 2 | Results show accepted votes grouped by card value, with numeric values ascending, `?` last, no-vote excluded, and a simple horizontal bar; each row shows `<n> vote` for one or `<n> votes` otherwise. | reversible assumption | Accepted via D-025 |
 | 3 | Show `<voted> of <participants> voted`, including `?` as a vote and using the current roster as denominator. | reversible assumption | Accepted via D-022 |
 | 4 | A Guest may join while `revealed` with no vote, per US-001; the Guest appears as `No vote` and changes the participation denominator only. | reversible assumption | Accepted via D-023 |
 | 5 | A Participant leaving is removed from the result population and their vote is excluded, including when the phase is already `revealed`. | reversible assumption | Accepted via D-023 |

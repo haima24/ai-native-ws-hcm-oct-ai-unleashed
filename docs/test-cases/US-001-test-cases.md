@@ -1,13 +1,13 @@
 # US-001 Test Cases — Create / join room
 
 Sources: [requirements](../requirements/US-001-create-join-room.md), [dev spec](../specs/US-001-dev-spec.md), [UI/UX](../design/ui-ux.md).
-Status: designed, NOT RUN. Priority: P1 = must pass for story done, P2 = should pass, P3 = nice to have.
+Status: designed; partly executed (see Execution status below). Priority: P1 = must pass for story done, P2 = should pass, P3 = nice to have.
 
 Conventions
 
 | Item | Value |
 |---|---|
-| Gate tag | `[D-020]` = depends on Supabase Presence; blocked until the D-020 spike is approved. Without Presence these cases are NOT RUN, never skipped silently. |
+| Presence tag | `[D-020]` = depends on Supabase Presence (D-020 Accepted). The tag marks Presence-dependent cases; it no longer blocks execution. Departure detection can also arrive through `room:guest-left` (D-024). |
 | e2e contexts | `Host` = browser context 1, `Guest`/`Guest2` = separate browser contexts (never tabs of one context, to keep `sessionStorage` separate). |
 | Valid names | `Maya`, `Noah`, `Linh`. 20-char name: `ABCDEFGHIJKLMNOPQRST`. 21-char name: `ABCDEFGHIJKLMNOPQRSTU`. |
 | Room code `R` | Code read from the Host's `room-code` element. Share link: `?room=<R>`. |
@@ -110,6 +110,10 @@ Conventions
 | TC-001-65 | AC-001-09, D-020 | Guest closes before Presence tracking (edge, negative) `[D-020]` | Host in `R`; delay Host acceptance (block `room:join-accepted` for the Guest) | 1. Guest submits join. 2. Close Guest page before accepted. 3. Release delay. | By design (dev spec risk) a Guest accepted before it tracks Presence may remain as a ghost row in the Host roster. Record the observation and classify it as `known limitation`, not a defect. | e2e | P2 |
 | TC-001-66 | AC-001-09 | Presence `join`/`sync` never changes roster (negative) | Active room | Feed Presence `join` for unaccepted ID `x`. | Roster unchanged; no `Leave` or `Join` dispatched. | unit | P1 |
 | TC-001-67 | AC-001-09 | Non-Host leave does not end room (negative) `[D-020]` | Host + 2 Guests | Close one Guest. | Remaining Guest and Host stay live; no `The Host closed the room. Return to Home to start or join another room.`. | e2e | P1 |
+| TC-001-100 | AC-001-09, D-024 | `room:guest-left` for an unknown `participantId` is ignored (negative) | Fake channel, Host session with Host `h1` and accepted Guest `g1` | Deliver `room:guest-left` `{ roomCode, participantId: 'zzz' }`. | Roster, `revision` and published views unchanged; nothing sent on the channel. | unit | P1 |
+| TC-001-101 | AC-001-09, D-024 | `room:guest-left` carrying the Host id is ignored (negative) | Same | Deliver `room:guest-left` `{ roomCode, participantId: 'h1' }`. | Room stays `active`; Host stays in the roster; `revision` unchanged; no `EndByHost`; nothing sent. | unit | P1 |
+| TC-001-102 | AC-001-09, D-024 | Duplicate `room:guest-left` and a later Presence leave are no-ops (negative) | Same, after the first `room:guest-left` for `g1` was accepted | 1. Deliver `room:guest-left` for `g1` again. 2. Emit Presence `leave` for `g1`. | `revision` stays at the value after the first removal; no second `room:public-view`; roster unchanged. | unit | P1 |
+| TC-001-103 | AC-001-09, D-024 | `room:guest-left` removes an accepted Guest and republishes (happy) | Same, revision `n` | Deliver `room:guest-left` `{ roomCode, participantId: 'g1' }`. | `g1` removed from the roster; `revision` = `n+1`; exactly one `room:public-view` is published, carrying revision `n+1` and no `g1`. | unit | P1 |
 
 ## 10. Host leaves (AC-001-10) — Presence-dependent
 
@@ -119,7 +123,7 @@ Conventions
 | TC-001-69 | AC-001-10 | Return to Home, old code fails `[D-020]` | After TC-001-68 | 1. Guest clicks `Return to Home`. 2. Join `R` with `Noah`. | Home shown. After up to 5 s: `Room not found or unreachable. Check the code and try again.`; code and name kept. | e2e | P1 |
 | TC-001-70 | AC-001-10, edge | Host reload `[D-020]` | Host + Guest in `R` | Host calls `page.reload()`. | Guest sees the Host-left message and `Return to Home`. Reloaded Host shows Home with no room (no `room-code`, no Players list, forms empty). | e2e | P1 |
 | TC-001-71 | AC-001-10 | `EndByHost` reducer (happy) | Active room | `EndByHost`; then `Join` for a new name; `EndByHost` again. | `status` = `ended`, revision +1; later `Join` is `ignored`/rejected with no state change; repeat end is a no-op. | unit | P1 |
-| TC-001-72 | AC-001-10 | Guest reload does not end room (negative) `[D-020]` | Host + 2 Guests | Guest1 reloads. | Room stays live for Host and Guest2 (Guest1 removed from roster on leave); no Host-left message. | e2e | P1 |
+| TC-001-72 | AC-001-10, D-024 | Guest reload does not end room (negative) `[D-020]` | Host + 2 Guests | Guest1 reloads. | Room stays live for Host and Guest2; no Host-left message. Guest1 sends a best-effort `room:guest-left` on `pagehide` (D-024), so the Host removes it from the roster and republishes; Presence leave is only the fallback and a later duplicate Leave is a no-op. Assert removal on Host and Guest2 and record the ms; assert the sent event only if the frame is observable. | e2e | P1 |
 | TC-001-73 | AC-001-10, D-005 | Forged `room:host-left` with wrong participant ID is ignored (negative) | Guest in room; Host ID `h1` | Deliver `room:host-left` with `participantId: 'zzz'`. | Guest stays in room; no Host-left message. | unit | P1 |
 | TC-001-74 | AC-001-10, D-005 | Forged `room:host-left` carrying the real Host ID (documented limitation) | Host + Guest in `R`; attacker client in channel (Playwright context 3 using the Supabase client, or a unit test) reads Host `participantId` from `room:public-view` | Attacker broadcasts `room:host-left` with that ID. | EXPECTED (limitation, not a defect): Guests accept it and show `The Host closed the room. Return to Home to start or join another room.`; Broadcast is not an authorization boundary (D-005). Result recorded as `documented limitation`; must not be reported as PASS for security. | manual | P2 |
 | TC-001-75 | AC-001-10 | Orderly Host close broadcasts `room:host-left` `[D-020]` | Host + Guest | Host triggers `pagehide`/close. | Guest shows Host-left via either `room:host-left` or Presence leave; message identical. Record which signal arrived first. | e2e | P3 |
@@ -143,11 +147,11 @@ Conventions
 |---|---|---|---|---|---|---|---|
 | TC-001-84 | Rule 5 | Guest joins in `voting`, sees phase, no vote | Host in `R`, phase `voting` | Guest joins as `Noah`. | Guest `room-phase` = `voting`; Guest row `Noah` shows `Not voted`; no vote value shown. | e2e | P1 |
 | TC-001-85 | Rule 5 | Guest joins in `revealed`, sees phase, no vote | Room in phase `revealed` (needs US-002/US-003 reveal; at unit level, a state built with `phase: 'revealed'`) | Apply `Join` for `Noah`; e2e: Guest joins after Host reveals. | `outcome` = `accepted`; `phase` stays `revealed`, `roundId` unchanged, `Noah` has `hasVoted: false`. e2e: Guest `room-phase` = `revealed`; `Noah` row shows `Not voted`. | unit | P1 |
-| TC-001-86 | Rule 5 | e2e variant of TC-001-85 | US-002 reveal implemented; Host revealed | Guest joins in `revealed`. | See TC-001-85 e2e expectation. NOT RUN until US-002 exists. | e2e | P2 |
+| TC-001-86 | Rule 5 | e2e variant of TC-001-85 | US-002 reveal implemented; Host revealed | Guest joins in `revealed`. | See TC-001-85 e2e expectation. NOT RUN: not automated; needs the US-003 Reveal flow. | e2e | P2 |
 | TC-001-87 | Rule 5 | No participant cap | Host plus 5 Guests (use 6 contexts or reducer) | Join 5 Guests. | All accepted; `Players (6)`; no cap error. Unit: 25 joins accepted. | unit | P3 |
 | TC-001-88 | Rule 5 | Joining does not change `roundId` or phase (negative) | Active room `roundId` 1 | Apply `Join`. | `roundId` and `phase` unchanged; no vote created. | unit | P1 |
 | TC-001-89 | Rule 8 | Guest reload: Home with code and name prefilled | Host in `R`; Guest joined as `Noah` (`sessionStorage` set) | Guest calls `page.reload()`. | Guest on Home; `Room code` = `R`; `Display name` = `Noah`; no `room-code` header; no `Connecting…`. | e2e | P1 |
-| TC-001-90 | Rule 8 | Guest reload does not rejoin automatically | Same | After reload, wait 5 s. Check Host. | Guest remains on Home. Host eventually `Players (1)` (removal needs `[D-020]`); no new `Noah` row appears. | e2e | P1 |
+| TC-001-90 | Rule 8 | Guest reload does not rejoin automatically | Same | After reload, wait 5 s. Check Host. | Guest remains on Home; no new `Noah` row appears. Host reaches `Players (1)`: the reloading Guest sends a best-effort `room:guest-left` on `pagehide` (D-024) and Presence leave is the fallback; record the removal ms. | e2e | P1 |
 | TC-001-91 | Rule 8 | Guest can rejoin manually after reload `[D-020]` | After TC-001-89 | Click `Join room`. | Joined as `Noah` once the old entry is removed; if Presence has not yet removed the old `Noah`, `That name is already taken in this room.` is shown — record observed behavior. | e2e | P2 |
 | TC-001-92 | Rule 8 | Only name is stored in `sessionStorage` | Guest joined | Inspect storage. | Only display name (and room code via URL) stored; no secrets, no vote data; Host name not stored on reload. | e2e | P3 |
 | TC-001-93 | Rule 10, D-017 | No service-role key in client bundle | Built app | Search `dist` for `service_role`; check Vite env names. | Only Supabase URL and anon key variables exist; no `service_role` string. | manual | P2 |
@@ -167,13 +171,13 @@ Conventions
 
 | Bucket | Rule | TC ids |
 |---|---|---|
-| Playwright now | e2e, P1, not `[D-020]` gated | TC-001-01, 04, 06, 07, 11, 12, 14, 15, 21, 23, 30, 36, 37, 44, 45, 46, 47, 48, 53, 54, 55, 56, 57, 76, 78, 81, 84, 89, 90 |
-| Playwright after Presence spike | e2e, P1, `[D-020]` gated | TC-001-18, 61, 62, 67, 68, 69, 70, 72, 77 |
+| Playwright now | e2e, P1, not Presence-dependent | TC-001-01, 04, 06, 07, 11, 12, 14, 15, 21, 23, 30, 36, 37, 44, 45, 46, 47, 48, 53, 54, 55, 56, 57, 76, 78, 81, 84, 89, 90 |
+| Playwright now, Presence-dependent | e2e, P1, `[D-020]` (Presence validated) | TC-001-18, 61, 62, 67, 68, 69, 70, 72, 77 |
 | Manual | P2 (e2e or manual level) | TC-001-03, 10, 22, 40, 42, 51, 59, 65, 74, 80, 82, 83, 86, 91, 93, 94, 98 |
 | Not planned | P3 | TC-001-17, 41, 50, 52, 75, 87, 92, 96, 97, 99 |
-| Vitest (unit level, outside this split) | unit cases run in Vitest regardless of priority, except P3 which are not planned | P1: TC-001-02, 08, 19, 20, 34, 39, 43, 58, 63, 64, 66, 71, 73, 79, 85, 88; P2: TC-001-49, 60, 95 |
+| Vitest (unit level, outside this split) | unit cases run in Vitest regardless of priority, except P3 which are not planned | P1: TC-001-02, 08, 19, 20, 34, 39, 43, 58, 63, 64, 66, 71, 73, 79, 85, 88, 100, 101, 102, 103; P2: TC-001-49, 60, 95 |
 
-TC-001-90 is automated now for its Guest-side assertions only; its Host-side removal check depends on Presence and waits for the spike.
+TC-001-90 asserts both the Guest side and the Host-side removal (via `room:guest-left`, D-024, with Presence as fallback).
 
 ## Coverage matrix
 
@@ -187,7 +191,7 @@ TC-001-90 is automated now for its Guest-side assertions only; its Host-side rem
 | AC-001-06 | TC-001-36, 41, 42 | TC-001-37, 39, 40 | TC-001-94 |
 | AC-001-07 | TC-001-43 | TC-001-44, 45, 46, 47, 48, 49, 50, 51 | TC-001-52 |
 | AC-001-08 | TC-001-53, 59 | TC-001-54, 55, 56, 57, 58 | TC-001-60, 96 |
-| AC-001-09 `[D-020]` | TC-001-61, 62, 63 | TC-001-64, 65 (known limitation, not a defect), 66, 67 | TC-001-65 (leave before Presence; known limitation) |
+| AC-001-09 `[D-020]` | TC-001-61, 62, 63, 103 | TC-001-64, 65 (known limitation, not a defect), 66, 67, 100, 101, 102 | TC-001-65 (leave before Presence; known limitation) |
 | AC-001-10 `[D-020]` | TC-001-68, 69, 70, 71 | TC-001-72, 73 | TC-001-74 (forged host-left), 75 |
 | AC-001-11 | TC-001-76, 77, 78 | TC-001-79, 80, 81 | TC-001-82, 83 |
 | Rule 5 | TC-001-84, 85, 86 | TC-001-88 | TC-001-87 |
@@ -195,7 +199,14 @@ TC-001-90 is automated now for its Guest-side assertions only; its Host-side rem
 | Rule 10 / D-017 | — | TC-001-93 | — |
 | Rule 11 | TC-001-18, 22 | — | — |
 
-D-020 gated cases (NOT RUN until the Presence spike is approved): TC-001-61, 62, 65, 67, 68, 69, 70, 72, 75, 77, 91 (partly 18 for latency, 90 for Host-side removal).
+## Execution status
+
+Presence is validated and D-020 is Accepted, so no case is gated on a spike any more. Figures below are the team-reported last run; per-case results are in the Playwright report, not reproduced here.
+
+- Last e2e run: 65 of 70 tests passed before fixes (5 failed; the failing cases are not itemized in this file, and they were not re-run after the fixes). Result for those 5 is FAIL until a rerun is recorded.
+- Automated e2e (executed in that run): TC-001-01, 04, 06, 07, 11, 12, 14, 15, 18, 21, 23, 30, 36, 37, 44, 45, 46, 47, 48, 53, 54, 55, 56, 57, 61, 62, 67, 68, 69, 70, 72, 76, 77, 78, 81, 84, 89, 90.
+- Automated unit (Vitest): TC-001-02, 08, 19, 20, 34, 39, 43, 49, 58, 60, 63, 64, 66, 71, 73, 79, 85, 87, 88, 95, plus the `room:guest-left` cases TC-001-100..103.
+- NOT RUN (no automation): e2e TC-001-03, 10, 17, 22, 40, 42, 51, 52, 59, 65, 75, 80, 82, 83, 86, 91, 92, 94, 96, 99; unit TC-001-41, 50; manual TC-001-74, 93, 97, 98.
 
 ## Not testable as written
 
@@ -216,3 +227,5 @@ D-020 gated cases (NOT RUN until the Presence spike is approved): TC-001-61, 62,
 | 13 | Guest reload for the Host-left (rule 7) state | Not specified whether prefill applies after the room ended. | BA |
 | 14 | Unknown-or-unreachable vs "Host unresponsive" | Same message by design; they cannot be told apart by tests. | — |
 | 15 | Clipboard behavior (`Link copied`) | Browser permission dependent; TC-001-03/99 cover both outcomes but depend on the browser. | Test environment |
+| 16 | D-020 status | These cases treat D-020 as Accepted (Presence validated), but [decisions.md](../knowledge/decisions.md) and the [dev spec](../specs/US-001-dev-spec.md) still list it as Proposed. The `[D-020]` tag follows the team report until the decision log is updated. | BA / mob |
+| 17 | `room:guest-left` cases TC-001-100..103 | D-024 and the spec event table define the event, but the spec has no AC or state-transition row for it; cases are traced to AC-001-09 and D-024. | Developer |

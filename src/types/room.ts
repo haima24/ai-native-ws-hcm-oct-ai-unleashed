@@ -41,10 +41,13 @@ export type RoomReducerResult = { state: RoomState; outcome: RoomOutcome; reason
 // `value` is null when the Participant has no accepted vote (shown as `No vote`).
 export type ResultEntry = { participantId: string; value: Card | null }
 
+// One group per card cast by a current Participant; No vote is in no group (D-025).
+export type ResultGroup = { card: Card; count: number }
+
 export type RoundResults = {
   entries: ResultEntry[]
-  average: string
-  consensus: 'Yes' | 'No' | '—'
+  // Numeric cards ascending, `?` last.
+  groups: ResultGroup[]
   voted: number
   participants: number
 }

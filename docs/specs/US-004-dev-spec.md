@@ -32,7 +32,7 @@ No e2e or static spec file is written for this story yet; Test owns them.
 | AC-004-10 | `ornament-divider` after the Room header and on the Host-left screen; `ornate` on Players and Results panels; paper texture on `body`; cards untouched | TC-004-35 | none |
 | AC-004-11 | Decorations are `aria-hidden` elements or CSS pseudo-elements with `pointer-events: none`; no text content; no state-dependent rendering | TC-004-37, 38 | none |
 
-Conflict resolution: UI/UX section 3 visual tokens (`#455A64`, "no gradients or large shadows") are superseded by this theme; this story updates that section. The brief still lists "themes" and "avatars" as out of scope; the mob must record the exception (proposed D-024).
+Conflict resolution: UI/UX section 3 visual tokens (`#455A64`, "no gradients or large shadows") are superseded by this theme; this story updates that section. The brief still lists "themes" and "avatars" as out of scope; the mob must record the exception under a new decision ID.
 
 ## File table
 | File | Existing / new | Reason for change |
@@ -44,7 +44,7 @@ Conflict resolution: UI/UX section 3 visual tokens (`#455A64`, "no gradients or 
 | `src/features/room/VotingCards.tsx` | Existing | Card states with tokens and non-color cues; no decoration on cards |
 | `src/features/room/ResultsPanel.tsx` | Existing | Panel and metric styling; `ornate` |
 | `docs/design/ui-ux.md` | Existing | Replace section 3 visual tokens; add the decoration contract |
-| `docs/knowledge/decisions.md` | Existing | Add proposed D-024 for the theme and decoration exception |
+| `docs/knowledge/decisions.md` | Existing | Add a proposed decision for the theme and decoration exception under a new ID |
 
 No change to `src/domain/`, `src/realtime/`, `src/types/`, `index.html`, `package.json` or `tests/`.
 
@@ -93,7 +93,7 @@ Selectors are unchanged and owned by the earlier specs; this story must leave th
 | Phase | heading `Phase: <phase>` | `phase-heading`, `room-phase`, `phase-waiting` | `Waiting for Host to reveal.`, `Waiting for Host to start a revote.` |
 | Cards | group `Voting cards`; buttons `0`..`?` with `aria-pressed` and `data-selection` | `vote-cards`, `vote-status`, `vote-error` | `Sending vote…`, `Vote was not confirmed. Try again.` |
 | Host actions | buttons `Reveal estimates`, `Revote` | `reveal-error` | `At least one vote is required to reveal` |
-| Results | heading `Results` | `results-panel`, `results-heading`, `results-average`, `results-consensus`, `results-participation` | `<n> of <m> voted` |
+| Results | heading `Results` | `results-panel`, `results-heading`, grouped result rows, `results-participation` | `<n> vote` / `<n> votes`; `<n> of <m> voted` |
 | Copy link | button `Copy link`, input `Room link` | none | `Link copied`, `Could not copy link. Select and copy the link.` |
 | Host-left | alert, button `Return to Home` | none | `The Host closed the room. Return to Home to start or join another room.` |
 | Decorations | none (hidden from assistive tech) | none | none; no new accessible names, roles or tab stops |
@@ -115,10 +115,10 @@ Selectors are unchanged and owned by the earlier specs; this story must leave th
 | 6 | Search for remaining arbitrary hex, `slate-`, `gray-`, `bg-white`, `text-white` in `src/` | static | grep |
 | 7 | Run unit tests (must be unchanged) | unit | `npm test` |
 | 8 | Measure contrast and capture screenshots (1280x720, 768x1024, 390x844) | manual evidence | n/a |
-| 9 | Update UI/UX section 3; add proposed D-024; write `docs/reviews/US-004-dev-review.md` | docs | n/a |
+| 9 | Update UI/UX section 3; add a proposed decision under a new ID; write `docs/reviews/US-004-dev-review.md` | docs | n/a |
 
 ## Open decisions
-- Q1 themes and Q6 avatars/illustration out of scope: mob, worked on as approved by the instruction to implement; must be recorded as D-024.
+- Q1 themes and Q6 avatars/illustration out of scope: mob, worked on as approved by the instruction to implement; must be recorded under a new decision ID.
 - Q3 template source, Q4 final palette, Q5 image budget, Q7 asset source, Q8 motif: mob/Developer, non-blocking.
 
 ## Handoff to Test

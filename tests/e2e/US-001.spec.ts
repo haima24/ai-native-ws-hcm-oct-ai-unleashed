@@ -474,7 +474,7 @@ test.describe('US-001 business rules 5 and 8 phase on join and Guest reload', ()
     // The old entry is removed by Presence; time it for the record.
     const start = Date.now()
     await expect.soft(host.room.playersHeading).toHaveText('Players (1)')
-    record('guest-reload-removal-ms', String(Date.now() - start + 5000))
+    record('guest-reload-removal-ms', String(Date.now() - start))
     await host.room.expectNames(['Maya'])
   })
 })
@@ -530,6 +530,8 @@ async function expectRoster(label: string, player: Player, names: string[]) {
 
 test.describe('US-001 AC-001-09/10/11 Presence lifecycle', () => {
   test.describe.configure({ timeout: 60_000 })
+  // Supabase Realtime ghost presence / slow subscribe can flake these tests (D-020, spike scenario f).
+  test.describe.configure({ retries: 1 })
 
   for (const mode of ['page', 'context'] as const) {
     test(`TC-001-61 Guest closes the ${mode} and is removed from the rosters`, async ({ newPlayer }) => {

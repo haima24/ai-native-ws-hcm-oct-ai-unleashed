@@ -107,7 +107,7 @@ No new input rules. Existing field rules and exact messages in US-001 are unchan
 ## Business rules
 1. This story changes presentation only; no business rule, decision or AC text from US-001..US-003 changes.
 2. Reveal/Revote authority, vote privacy (D-005) and phase rules (D-006) are enforced by domain code, not by styling.
-3. Results semantics (Average excluding `?`, Consensus, `—` when empty, `<voted> of <participants> voted`) are unchanged; only their presentation is restyled.
+3. Results semantics follow US-003: accepted votes are grouped by card value with numeric values ascending, `?` last, no-vote excluded, and a simple horizontal bar per group; participation is shown as `<voted> of <participants> voted`. This story restyles their presentation only.
 4. (rev 3) Imagery is decoration only. It is the same for every Participant, never depends on room state or votes (D-005), never replaces text, and adds no avatar or Participant-specific graphic.
 
 ## Traceability
