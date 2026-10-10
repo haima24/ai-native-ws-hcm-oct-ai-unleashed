@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react'
 import type { RoomSession } from '../../realtime/room-channel'
+import ThemeIcon from '../theme/ThemeIcon'
+import ThemePicker from '../theme/ThemePicker'
+import { useTheme } from '../theme/themeStore'
 import ResultsPanel from './ResultsPanel'
 import { useRoomSession } from './useRoomSession'
 import VotingCards from './VotingCards'
@@ -16,6 +19,7 @@ type CopyState = 'idle' | 'copied' | 'failed'
 
 export default function RoomShell({ session, onReturnHome }: { session: RoomSession; onReturnHome: () => void }) {
   const { view, hostLeft, error, voteState, vote, reveal, revote } = useRoomSession(session)
+  const theme = useTheme()
   const [copy, setCopy] = useState<CopyState>('idle')
   // Revision at which Reveal was refused; the error disappears once the view moves on.
   const [revealErrorRevision, setRevealErrorRevision] = useState<number | null>(null)
@@ -84,6 +88,7 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
           Copy link
         </button>
         {copy === 'copied' && <p role="status">Link copied</p>}
+        <ThemePicker className="basis-full" />
       </header>
       <div aria-hidden="true" className="ornament-divider mt-3" />
       {copy === 'failed' && (
@@ -108,7 +113,8 @@ export default function RoomShell({ session, onReturnHome }: { session: RoomSess
 
       <div className="mt-6 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-6">
         <section aria-labelledby="players-heading" className="ornate rounded border border-rule bg-panel p-3">
-          <h2 id="players-heading" className="text-lg font-semibold">
+          <h2 id="players-heading" className="flex items-center gap-2 text-lg font-semibold">
+            <ThemeIcon theme={theme} className="h-5 w-5 text-accent" />
             Players ({view.participants.length})
           </h2>
           <ul data-testid="players-list" className="mt-2 space-y-1">

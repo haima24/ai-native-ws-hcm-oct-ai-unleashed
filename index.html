@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Story Pointing</title>
+    <script>
+      try {
+        var t = localStorage.getItem('story-pointing:theme');
+        if (['vintage', 'light', 'dark', 'ocean', 'sunny', 'forest'].indexOf(t) !== -1) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

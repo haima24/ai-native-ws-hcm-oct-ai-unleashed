@@ -45,17 +45,17 @@
 
   .ornate::before {
     inset: 3px;
-    border: 1px solid color-mix(in srgb, var(--color-rule) 55%, transparent);
-    border-radius: 2px;
+    border: 1px var(--ornate-frame-style, solid) color-mix(in srgb, var(--color-rule) 55%, transparent);
+    border-radius: var(--ornate-radius, 2px);
   }
 
   .ornate::after {
     inset: 0;
     background-image:
-      radial-gradient(circle at 3px 3px, var(--color-rule) 2px, transparent 2.5px),
-      radial-gradient(circle at calc(100% - 3px) 3px, var(--color-rule) 2px, transparent 2.5px),
-      radial-gradient(circle at 3px calc(100% - 3px), var(--color-rule) 2px, transparent 2.5px),
-      radial-gradient(circle at calc(100% - 3px) calc(100% - 3px), var(--color-rule) 2px, transparent 2.5px);
+      radial-gradient(circle at 3px 3px, var(--color-rule) var(--ornate-dot, 2px), transparent calc(var(--ornate-dot, 2px) + 0.5px)),
+      radial-gradient(circle at calc(100% - 3px) 3px, var(--color-rule) var(--ornate-dot, 2px), transparent calc(var(--ornate-dot, 2px) + 0.5px)),
+      radial-gradient(circle at 3px calc(100% - 3px), var(--color-rule) var(--ornate-dot, 2px), transparent calc(var(--ornate-dot, 2px) + 0.5px)),
+      radial-gradient(circle at calc(100% - 3px) calc(100% - 3px), var(--color-rule) var(--ornate-dot, 2px), transparent calc(var(--ornate-dot, 2px) + 0.5px));
   }
 
   .ornament-divider {
@@ -70,7 +70,7 @@
     top: 50%;
     right: 0;
     left: 0;
-    border-top: 3px double var(--color-rule);
+    border-top: var(--divider-line, 3px double) var(--color-rule);
     transform: translateY(-50%);
   }
 
@@ -82,7 +82,83 @@
     width: 8px;
     height: 8px;
     background-color: var(--color-accent);
+    border-radius: var(--divider-mark-radius, 0);
     box-shadow: 0 0 0 4px var(--color-paper);
     transform: translate(-50%, -50%) rotate(45deg);
   }
+}
+
+/* Vintage is the default in @theme; other themes override the same tokens. */
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme="light"] {
+  --color-paper: #f7f8fa;
+  --color-panel: #e9ecf1;
+  --color-ink: #1b1f27;
+  --color-ink-muted: #4a5565;
+  --color-accent: #1f4fbf;
+  --color-danger: #b3261e;
+  --color-focus: #0b57d0;
+  --color-rule: #6b7686;
+  --divider-line: 1px solid;
+  --ornate-dot: 0px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #0f1720;
+  --color-panel: #1a2532;
+  --color-ink: #e6edf5;
+  --color-ink-muted: #a9b8c8;
+  --color-accent: #7fb2ff;
+  --color-danger: #ff8a80;
+  --color-focus: #ffd166;
+  --color-rule: #5b6b7d;
+  --divider-line: 1px solid;
+  --divider-mark-radius: 50%;
+}
+
+:root[data-theme="ocean"] {
+  --color-paper: #eaf6fa;
+  --color-panel: #d2eaf2;
+  --color-ink: #0b2a3a;
+  --color-ink-muted: #3e5c6b;
+  --color-accent: #0b6a8f;
+  --color-danger: #b3261e;
+  --color-focus: #0a3d91;
+  --color-rule: #4f8fa8;
+  --divider-line: 2px dotted;
+  --divider-mark-radius: 50%;
+  --ornate-frame-style: dotted;
+  --ornate-dot: 3px;
+}
+
+:root[data-theme="sunny"] {
+  --color-paper: #fff8e1;
+  --color-panel: #ffebb0;
+  --color-ink: #3b2a00;
+  --color-ink-muted: #6b5200;
+  --color-accent: #a63f00;
+  --color-danger: #a4161a;
+  --color-focus: #1a4fa0;
+  --color-rule: #c28a00;
+  --divider-line: 3px dashed;
+  --divider-mark-radius: 50%;
+  --ornate-frame-style: dashed;
+  --ornate-dot: 3px;
+}
+
+:root[data-theme="forest"] {
+  --color-paper: #eef3e6;
+  --color-panel: #dce8ce;
+  --color-ink: #1d2b1a;
+  --color-ink-muted: #4a5e43;
+  --color-accent: #2e6b34;
+  --color-danger: #a8231b;
+  --color-focus: #7a3e00;
+  --color-rule: #6e8f5b;
+  --divider-line: 2px dashed;
+  --divider-mark-radius: 0 100% 0 100%;
 }
