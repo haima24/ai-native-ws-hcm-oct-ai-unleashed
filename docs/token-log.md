@@ -7,6 +7,7 @@ Remaining credits below are calculated from logged expenses, not read from the a
 | Time | Member | Activity | Credits spent | Optimization applied |
 |------|--------|----------|--------------:|----------------------|
 | 2026-10-10 13:27 | Thao | Build product brief for project | 13.8 | use Claude sonet 5.5 to build |
+| 2026-10-10 14:03 | Van | Build harness for application | 99.6 | use Claude sonet 5.5 |
 <!-- records:end -->
 
 ### AIC balance tracking
@@ -15,7 +16,8 @@ Remaining credits below are calculated from logged expenses, not read from the a
 | Team member | AIC before | AIC after (remaining) | Delta (spent) |
 |-------------|:----------:|:---------------------:|:-------------:|
 | Thao | 4000 | 3986.2 | 13.8 |
+| Van | 4000 | 3900.4 | 99.6 |
 <!-- aic:end -->
 
-**Total AIC consumed:** 13.8
+**Total AIC consumed:** 113.4
 <!-- aic:total -->
